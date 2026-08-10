@@ -1,0 +1,25 @@
+meta {
+  name: Get Available Catalogs List
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/catalogs
+  body: none
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

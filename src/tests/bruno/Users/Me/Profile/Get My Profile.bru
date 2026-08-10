@@ -1,0 +1,20 @@
+meta {
+  name: Get My Profile
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/users/me/profile
+  body: none
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

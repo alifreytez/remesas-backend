@@ -1,0 +1,30 @@
+meta {
+  name: Get Session Roles and Permissions
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/users/me/permissions
+  body: none
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("Should successfully retrieve session roles and permissions", function() {
+    const resBody = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+    expect(resBody.success).to.equal(true);
+    expect(resBody.data.roles).to.be.an('array');
+    expect(resBody.data.permissions).to.be.an('array');
+  });
+}

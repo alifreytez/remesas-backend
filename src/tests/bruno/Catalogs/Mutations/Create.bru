@@ -1,0 +1,33 @@
+meta {
+  name: Create Catalog Item
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/catalogs/{{catalog}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "code": "1234",
+    "description": "jeje",
+    "symbol": "%",
+    "isBaseCurrency": false
+  }
+}
+
+vars:pre-request {
+  catalog: currencies
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Get My Security
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/users/me/security
+  body: none
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("Should successfully retrieve user security info", function() {
+    const resBody = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+    expect(resBody.success).to.equal(true);
+    expect(resBody.data.usuario).to.be.a('string');
+  });
+}

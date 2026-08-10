@@ -1,0 +1,36 @@
+﻿meta {
+  name: Update My Security (Email Gestion)
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/users/me/security
+  body: json
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "claveActual": "dinformatica*2026**",
+    "emailGestion": "pastoralirio6589@gmail.com"
+  }
+}
+
+tests {
+  test("Should update management email via security endpoint", function() {
+    const resBody = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+    expect(resBody.data.emailGestion).to.equal("operaciones.seguridad@REMESAS.edu.ve");
+  });
+}
+

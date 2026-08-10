@@ -1,0 +1,25 @@
+meta {
+  name: Get Permission Resources
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/permissions/resources
+  body: none
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+script:pre-request {
+  const baseUrl = bru.getEnvVar('baseUrl') || 'http://127.0.0.1:4000/api/v1';
+  bru.setVar('baseUrl', baseUrl);
+}

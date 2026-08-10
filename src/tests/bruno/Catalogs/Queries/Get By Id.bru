@@ -1,0 +1,24 @@
+meta {
+  name: Get Catalog Item By Id
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/catalogs/{{catalog}}/1
+  body: none
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+vars:pre-request {
+  catalog: movie-lifecycle-states
+}

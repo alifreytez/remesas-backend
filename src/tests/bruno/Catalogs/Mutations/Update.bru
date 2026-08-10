@@ -1,0 +1,33 @@
+meta {
+  name: Update Catalog Item
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{baseUrl}}/catalogs/{{catalog}}/1
+  body: json
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "code": "12323123",
+    "description": "jeje",
+    "symbol": "%",
+    "isBaseCurrency": false
+  }
+}
+
+vars:pre-request {
+  catalog: currencies
+}

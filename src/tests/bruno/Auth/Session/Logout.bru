@@ -1,0 +1,30 @@
+meta {
+  name: Logout
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/logout
+  body: none
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+script:post-response {
+  if (res.status === 200) {
+    const channel = (typeof req.getHeader === "function" ? req.getHeader("x-client-channel") : req.headers["x-client-channel"]) || "";
+    if (channel.toString().trim().toLowerCase() !== "web") {
+      bru.setEnvVar("accessToken", "");
+      bru.setEnvVar("refreshToken", "");
+    }
+  }
+}

@@ -1,0 +1,24 @@
+meta {
+  name: Get Catalog Metadata
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/catalogs/{{catalog}}/metadata
+  body: none
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+vars:pre-request {
+  catalog: currencies
+}

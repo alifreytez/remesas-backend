@@ -1,0 +1,35 @@
+meta {
+  name: Update Permission
+  type: http
+  seq: 2
+}
+
+patch {
+  url: {{baseUrl}}/permissions/{{testPermissionId}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "tipoPermiso": 2
+  }
+}
+
+vars:pre-request {
+  testPermissionId: 53
+}
+
+script:pre-request {
+  const baseUrl = bru.getEnvVar('baseUrl') || 'http://127.0.0.1:4000/api/v1';
+  bru.setVar('baseUrl', baseUrl);
+}

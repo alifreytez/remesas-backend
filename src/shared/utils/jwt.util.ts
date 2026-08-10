@@ -1,0 +1,177 @@
+import jwt from 'jsonwebtoken';
+import { AppConfig } from '@config/app.config.js';
+import { UserSession } from '@rules/api.type.js';
+import { nanoid } from 'nanoid';
+import { getTimeIn } from './date-handler.util.js';
+
+export interface JWTPayload {
+    sub?: string;
+    iat?: number;
+    exp?: number;
+    type?: string;
+    jti?: string;
+    [key: string]: any;
+}
+
+export class JWTUtil {
+    private static SECRET: string;
+    private static EXPIRES_IN: jwt.SignOptions['expiresIn'] = '7d';
+    private static REFRESH_EXPIRES_IN: jwt.SignOptions['expiresIn'] = '30d';
+
+    static {
+        const security = AppConfig.load().security;
+
+        if (!security.jwtSecret || security.jwtSecret === '') throw new Error('JWT_SECRET environment variable is not defined for production');
+
+        this.SECRET = security.jwtSecret;
+        if (security.jwtAccessExpiresIn) this.EXPIRES_IN = security.jwtAccessExpiresIn as jwt.SignOptions['expiresIn'];
+        if (security.jwtRefreshExpiresIn) this.REFRESH_EXPIRES_IN = security.jwtRefreshExpiresIn as jwt.SignOptions['expiresIn'];
+    }
+
+    static getAccessExpiresInMs(): number {
+        return this.parseExpiryToMs(this.EXPIRES_IN as string);
+    }
+
+    static getRefreshExpiresInMs(): number {
+        return this.parseExpiryToMs(this.REFRESH_EXPIRES_IN as string);
+    }
+
+    private static parseExpiryToMs(expiry: string): number {
+        return Number(getTimeIn(expiry, 'ms', { onlyNumberOutput: true }));
+    }
+
+    static generateAccessToken(payload: UserSession): string {
+        return jwt.sign(
+            {
+                ...payload,
+                type: 'access',
+                iat: Math.floor(Date.now() / 1000),
+                jti: nanoid(),
+            },
+            this.SECRET,
+            { expiresIn: this.EXPIRES_IN }
+        );
+    }
+
+    static verifyAccessToken<T = JWTPayload>(token: string): T {
+        try {
+            const decoded = jwt.verify(token, this.SECRET) as T;
+            if ((decoded as any).type !== 'access') throw new Error('Tipo de token inválido');
+            return decoded;
+        } catch (error) {
+            if (error instanceof jwt.TokenExpiredError) throw new Error('El token ha expirado');
+            else if (error instanceof jwt.JsonWebTokenError) throw new Error('Token inválido');
+
+            throw new Error('Falló la verificación del token');
+        }
+    }
+
+    static decodeToken<T = JWTPayload>(token: string): T | null {
+        try {
+            return jwt.decode(token) as T;
+        } catch {
+            return null;
+        }
+    }
+
+    static generateToken(payload: JWTPayload, secret: string, expiresIn: jwt.SignOptions['expiresIn']): string {
+        return jwt.sign(
+            {
+                ...payload,
+                iat: Math.floor(Date.now() / 1000),
+            },
+            secret,
+            { expiresIn }
+        );
+    }
+    static verifyToken<T = JWTPayload>(token: string, secret: string): T {
+        return jwt.verify(token, secret) as T;
+    }
+
+    // Método para extraer el token de un header Authorization
+    static extractToken(authHeader: string | undefined): string | null {
+        if (!authHeader) return null;
+
+        const parts = authHeader.split(' ');
+        if (parts.length !== 2 || parts[0] !== 'Bearer') return null;
+
+        return parts[1];
+    }
+
+    // Método para generar un token con expiración personalizada
+    static generateAccessTokenWithExpiry(payload: JWTPayload, expiresIn: jwt.SignOptions['expiresIn']): string {
+        return jwt.sign(
+            {
+                ...payload,
+                iat: Math.floor(Date.now() / 1000),
+                jti: nanoid(),
+            },
+            this.SECRET,
+            { expiresIn }
+        );
+    }
+
+    // Método para verificar si un token está a punto de expirar
+    static isTokenExpiringSoon(token: string, thresholdSeconds: number = 3600): boolean {
+        const decoded = this.decodeToken(token);
+
+        if (!decoded || !decoded.exp) return false;
+
+        const now = Math.floor(Date.now() / 1000);
+        const timeUntilExpiry = decoded.exp - now;
+
+        return timeUntilExpiry <= thresholdSeconds;
+    }
+
+    // Método para obtener el tiempo restante de un token en segundos
+    static getTokenRemainingTime(token: string): number | null {
+        const decoded = this.decodeToken(token);
+
+        if (!decoded || !decoded.exp) return null;
+
+        const now = Math.floor(Date.now() / 1000);
+        return Math.max(0, decoded.exp - now);
+    }
+
+    static getPayload(token: string): JWTPayload {
+        const decoded = this.decodeToken(token);
+
+        if (!decoded) throw new Error('Token inválido');
+
+        delete decoded.iat;
+        delete decoded.exp;
+        delete decoded.type;
+        delete decoded.jti;
+
+        return decoded;
+    }
+
+    static generateRefreshToken(payload: JWTPayload): string {
+        return jwt.sign(
+            {
+                ...payload,
+                type: 'refresh',
+                iat: Math.floor(Date.now() / 1000),
+                jti: nanoid(),
+            },
+            this.SECRET,
+            { expiresIn: this.REFRESH_EXPIRES_IN }
+        );
+    }
+
+    static verifyRefreshToken<T = JWTPayload>(token: string, options?: jwt.VerifyOptions): T {
+        try {
+            const decoded = jwt.verify(token, this.SECRET, options) as T;
+            if ((decoded as any).type !== 'refresh') throw new Error('Tipo de token inválido');
+            return decoded;
+        } catch (error) {
+            if (error instanceof jwt.TokenExpiredError) throw new Error('El token ha expirado');
+            else if (error instanceof jwt.JsonWebTokenError) throw new Error('Token inválido');
+
+            throw new Error('Falló la verificación del token');
+        }
+    }
+}
+
+// Exportar por defecto
+export default JWTUtil;

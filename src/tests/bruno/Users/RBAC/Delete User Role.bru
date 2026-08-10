@@ -1,0 +1,30 @@
+meta {
+  name: Delete User Role
+  type: http
+  seq: 17
+}
+
+delete {
+  url: {{baseUrl}}/users/{{testUserId}}/roles/{{testRoleId}}
+  body: none
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+vars:pre-request {
+  testUserId: 2
+  testRoleId: 4
+}
+
+script:pre-request {
+  const baseUrl = bru.getEnvVar('baseUrl') || 'http://127.0.0.1:4000/api/v1';
+  bru.setVar('baseUrl', baseUrl);
+}

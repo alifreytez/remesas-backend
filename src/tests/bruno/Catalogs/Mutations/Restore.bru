@@ -1,0 +1,25 @@
+meta {
+  name: Restore Catalog
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/catalogs/tesoreria-tipos-solicitud-caja/1/restore
+  body: none
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+script:pre-request {
+  const baseUrl = bru.getEnvVar('baseUrl') || 'http://127.0.0.1:4000/api/v1';
+  bru.setVar('baseUrl', baseUrl);
+}

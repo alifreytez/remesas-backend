@@ -1,0 +1,20 @@
+meta {
+  name: Get All Users (Manager)
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/users?page=1&limit=10
+  body: none
+  auth: bearer
+}
+
+headers {
+  x-client-channel: web
+  x-device-id: bruno-test-device
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
