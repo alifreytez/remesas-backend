@@ -5,52 +5,51 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      await queryInterface.createTable('users', {
+      await queryInterface.createTable('country_receiving_methods', {
         id: { allowNull: false, autoIncrement: true, primaryKey: true, type: Sequelize.INTEGER },
-        username: { type: Sequelize.STRING(255), allowNull: false },
-        user_type: { type: Sequelize.INTEGER, allowNull: false },
-        person: { type: Sequelize.INTEGER, allowNull: false },
-        email: { allowNull: false, type: Sequelize.STRING(150) },
-        password_hash: { allowNull: false, type: Sequelize.STRING(255) },
+        country: { type: Sequelize.INTEGER, allowNull: false },
+        receiving_method: { type: Sequelize.INTEGER, allowNull: false },
+        is_active: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: true },
         created_at: { allowNull: false, type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
         updated_at: { allowNull: false, type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
         deleted_at: { type: Sequelize.DATE }
       }, { transaction });
-      await queryInterface.addIndex({ tableName: 'users' }, ['username'], {
-        unique: true,
-        where: { deleted_at: null },
-        name: 'uq_users_username',
-        transaction
-      });
-      await queryInterface.addIndex({ tableName: 'users' }, ['person', 'user_type'], {
-        unique: true,
-        where: { deleted_at: null },
-        name: 'unique_person_userType',
-        transaction
-      });
+      
       await queryInterface.addConstraint(
-        { tableName: 'users' },
+        { tableName: 'country_receiving_methods' },
         {
-          fields: ['user_type'],
+          fields: ['country', 'receiving_method'],
+          type: 'unique',
+          name: 'unique_country_method',
+          transaction,
+        }
+      );
+
+      await queryInterface.addConstraint(
+        { tableName: 'country_receiving_methods' },
+        {
+          fields: ['country'],
           type: 'foreign key',
-          name: 'fk_users_user_type',
-          references: { table: { tableName: 'user_types' }, field: 'id' },
+          name: 'fk_country_receiving_methods_country',
+          references: { table: { tableName: 'countries' }, field: 'id' },
           onDelete: 'NO ACTION',
           onUpdate: 'NO ACTION',
           transaction,
         }
-      );      await queryInterface.addConstraint(
-        { tableName: 'users' },
+      );      
+      await queryInterface.addConstraint(
+        { tableName: 'country_receiving_methods' },
         {
-          fields: ['person'],
+          fields: ['receiving_method'],
           type: 'foreign key',
-          name: 'fk_users_person',
-          references: { table: { tableName: 'people' }, field: 'id' },
+          name: 'fk_country_receiving_methods_receiving_method',
+          references: { table: { tableName: 'receiving_methods' }, field: 'id' },
           onDelete: 'NO ACTION',
           onUpdate: 'NO ACTION',
           transaction,
         }
       );
+
       await transaction.commit();
     } catch (err) {
       await transaction.rollback();
@@ -61,7 +60,7 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      await queryInterface.dropTable('users', { transaction });
+      await queryInterface.dropTable('country_receiving_methods', { transaction });
       await transaction.commit();
     } catch (err) {
       await transaction.rollback();

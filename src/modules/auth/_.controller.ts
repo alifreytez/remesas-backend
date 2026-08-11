@@ -36,7 +36,7 @@ class AuthController extends ControllerBase {
         const body = this.getBody();
         const { deviceId, deviceInfo } = this._getDeviceData();
         const { user, accessToken, refreshToken } = await service.login({
-            email: body.email,
+            username: body.username,
             password: body.password,
             device: deviceInfo,
             deviceId,
@@ -96,27 +96,41 @@ class AuthController extends ControllerBase {
         this.success(null, 'Sesión cerrada exitosamente');
     }
 
-    async forgotPassword() {
+    async register() {
+        const body = this.getBody();
+        const data = await service.register(body);
+        this.created(data, 'Usuario registrado exitosamente');
+    }
+
+    async forgotUsername() {
         const body = this.getBody();
         const email = body.email;
-        await service.forgotPassword({ email });
-        this.success(null, 'Si el correo está vinculado a alguna cuenta, se enviará un código para restablecer la contraseña');
+        await service.forgotUsername({ email });
+        this.success(null, 'Si el correo electrónico está asociado a alguna cuenta, se enviará un mensaje con la lista de usuarios');
+    }
+
+    async forgotPassword() {
+        const body = this.getBody();
+        const username = body.username;
+        const email = body.email;
+        const result = await service.forgotPassword({ username, email });
+        this.success(result, 'Si el usuario y correo están vinculados a alguna cuenta, se enviará un código para restablecer la contraseña');
     }
 
     async verifyResetCode() {
         const body = this.getBody();
-        const email = body.email;
+        const username = body.username;
         const code = body.code;
-        const result = await service.verifyResetCode({ email, code });
+        const result = await service.verifyResetCode({ username, code });
         this.success(result, 'Código verificado con éxito');
     }
 
     async resetPassword() {
         const body = this.getBody();
-        const email = body.email;
+        const username = body.username;
         const token = body.token;
         const password = body.password;
-        await service.resetPassword({ email, token, password });
+        await service.resetPassword({ username, token, password });
         this.success(null, 'Contraseña actualizada exitosamente');
     }
 }

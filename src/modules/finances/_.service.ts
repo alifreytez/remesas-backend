@@ -11,9 +11,9 @@ class FinancesService extends BaseService {
         return await this.ExchangeRates.getAllActive({
             ...filters,
             relations: [
-                { association: '_OriginCountry' },
-                { association: '_DestinationCountry' },
-                { association: '_CreatedBy' }
+                { association: '_InitialCountry' },
+                { association: '_SecondaryCountry' },
+                { association: '_Creator' }
             ]
         });
     }
@@ -21,23 +21,23 @@ class FinancesService extends BaseService {
     async getRateById(id: string | number) {
         return await this.ExchangeRates.getOne({ id }, {
             relations: [
-                { association: '_OriginCountry' },
-                { association: '_DestinationCountry' },
-                { association: '_CreatedBy' }
+                { association: '_InitialCountry' },
+                { association: '_SecondaryCountry' },
+                { association: '_Creator' }
             ]
         });
     }
 
     async createRate(data: any, createdBy: string | number) {
-        const { originCountry, destinationCountry, rate } = data;
+        const { initialCountry, secondaryCountry, rate } = data;
 
-        if (!originCountry || !destinationCountry || !rate) {
-            throw new BadRequestError('Faltan datos requeridos (originCountry, destinationCountry, rate)');
+        if (!initialCountry || !secondaryCountry || !rate) {
+            throw new BadRequestError('Faltan datos requeridos (initialCountry, secondaryCountry, rate)');
         }
 
         const newRate = await this.ExchangeRates.create({
-            originCountry,
-            destinationCountry,
+            initialCountry,
+            secondaryCountry,
             rate,
             createdBy
         });

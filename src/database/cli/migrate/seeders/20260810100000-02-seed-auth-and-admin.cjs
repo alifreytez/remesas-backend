@@ -42,6 +42,7 @@ module.exports = {
       const passwordHash = bcrypt.hashSync('Admin123$', 10);
       await queryInterface.bulkInsert('users', [
         { 
+          username: 'admin',
           user_type: userTypeId,
           person: personId,
           email: 'admin@remesas.com',

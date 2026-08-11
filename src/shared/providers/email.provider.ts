@@ -1,4 +1,4 @@
-﻿import nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -211,16 +211,16 @@ export class EmailProvider {
 
         if (html.includes('cid:REMESAS_logo') && !attachments.some((a) => a.cid === 'REMESAS_logo')) {
             const possiblePaths = [
-                path.resolve(__dirname, '../templates/assets/REMESAS-imagotipo.png'),
-                path.resolve(process.cwd(), 'src/shared/templates/assets/REMESAS-imagotipo.png'),
-                path.resolve(process.cwd(), 'build/shared/templates/assets/REMESAS-imagotipo.png'),
-                path.resolve(process.cwd(), '../client/static/images/REMESAS-imagotipo.png'),
+                path.resolve(__dirname, '../templates/assets/logo.png'),
+                path.resolve(process.cwd(), 'src/shared/templates/assets/logo.png'),
+                path.resolve(process.cwd(), 'build/shared/templates/assets/logo.png'),
+                path.resolve(process.cwd(), '../client/static/images/logo.png'),
             ];
 
             for (const assetPath of possiblePaths) {
                 if (fs.existsSync(assetPath)) {
                     attachments.push({
-                        filename: 'REMESAS-imagotipo.png',
+                        filename: 'logo.png',
                         content: fs.readFileSync(assetPath),
                         cid: 'REMESAS_logo',
                         contentType: 'image/png',

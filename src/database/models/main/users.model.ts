@@ -11,9 +11,16 @@ export default class UsersModel extends SequelizeModelBase {
                 autoIncrement: true,
                 enhancedData: { visible: false, order: 1 },
             },
+            username: {
+                allowNull: false,
+                type: DataTypes.STRING(255),
+                unique: true,
+                enhancedData: { uiLabel: 'Usuario', order: 1.5 },
+            },
             userType: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
+                unique: 'unique_person_userType', // Composite unique
                 enhancedData: { 
                     uiLabel: 'Tipo de Usuario', 
                     order: 2,
@@ -24,6 +31,7 @@ export default class UsersModel extends SequelizeModelBase {
             person: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
+                unique: 'unique_person_userType', // Composite unique
                 enhancedData: { 
                     uiLabel: 'Persona', 
                     order: 3,
@@ -34,7 +42,7 @@ export default class UsersModel extends SequelizeModelBase {
             email: {
                 allowNull: false,
                 type: DataTypes.STRING(150),
-                unique: true,
+                // unique: true, // Removido para permitir múltiples cuentas con el mismo correo
                 enhancedData: { uiLabel: 'Correo Electrónico', order: 4, inputType: 'email' as const },
             },
             passwordHash: {

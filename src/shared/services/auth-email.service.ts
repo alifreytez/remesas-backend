@@ -1,8 +1,9 @@
-﻿import { emailProvider } from '@providers/email.provider.js';
+import { emailProvider } from '@providers/email.provider.js';
 import { AppConfig } from '@config/app.config.js';
 import { Logger } from '@utils/logger.util.js';
 import { PasswordResetEmailTemplate } from '@templates/emails/password-reset.template.js';
 import { PasswordResetSuccessEmailTemplate } from '@templates/emails/password-reset-success.template.js';
+import { ForgotUsernameEmailTemplate } from '@templates/emails/forgot-username.template.js';
 
 class AuthEmailService {
     private readonly AUTH_ACCOUNT_ID = 'AUTH_MAIL';
@@ -58,6 +59,19 @@ class AuthEmailService {
         await this.ensureTransporter();
         const subject = 'REMESAS — Confirmación de Contraseña Actualizada';
         const html = PasswordResetSuccessEmailTemplate(recipientName);
+
+        try {
+            await this.provider.sendMail(this.AUTH_ACCOUNT_ID, { to, subject, html });
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    async sendForgotUsernameEmail(to: string, users: { username: string; userType: string }[], recipientName?: string): Promise<boolean> {
+        await this.ensureTransporter();
+        const subject = 'REMESAS — Recordatorio de Usuarios';
+        const html = ForgotUsernameEmailTemplate(users, recipientName);
 
         try {
             await this.provider.sendMail(this.AUTH_ACCOUNT_ID, { to, subject, html });

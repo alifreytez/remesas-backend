@@ -1,6 +1,6 @@
 export const REGEX = {
-    // Al menos una letra, un número y mínimo 8 caracteres
-    PASSWORD: /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[\W_])[a-zA-Z\d\W_]{8,30}$/,
+    // Mínimo 8 caracteres, máximo 30. Conjunto de caracteres permitidos (letras, números, símbolos)
+    PASSWORD: /^[a-zA-Z\d\W_]{8,30}$/,
     // Sin símbolos seguidos, empieza y termina en letra/número, 4-20 chars
     USERNAME: /^(?!.*[-_.]{2})[a-zA-Z0-9][a-zA-Z0-9-_.]{2,18}[a-zA-Z0-9]$/,
     // Email estándar
