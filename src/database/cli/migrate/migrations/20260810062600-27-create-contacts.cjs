@@ -9,7 +9,8 @@ module.exports = {
         id: { allowNull: false, autoIncrement: true, primaryKey: true, type: Sequelize.INTEGER },
         client: { type: Sequelize.INTEGER, allowNull: false },
         name: { type: Sequelize.STRING(255), allowNull: false },
-        country_method: { type: Sequelize.INTEGER, allowNull: false },
+        document: { type: Sequelize.STRING(100), allowNull: false },
+        country: { type: Sequelize.INTEGER, allowNull: false },
         contact_data: { type: Sequelize.JSONB, allowNull: false },
         created_at: { allowNull: false, type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
         updated_at: { allowNull: false, type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
@@ -32,10 +33,10 @@ module.exports = {
       await queryInterface.addConstraint(
         { tableName: 'contacts' },
         {
-          fields: ['country_method'],
+          fields: ['country'],
           type: 'foreign key',
-          name: 'fk_contacts_country_method',
-          references: { table: { tableName: 'country_receiving_methods' }, field: 'id' },
+          name: 'fk_contacts_country',
+          references: { table: { tableName: 'countries' }, field: 'id' },
           onDelete: 'NO ACTION',
           onUpdate: 'NO ACTION',
           transaction,

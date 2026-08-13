@@ -13,53 +13,81 @@ module.exports = {
         { code: 'CLIENT', description: 'Cliente Regular' }
       ], { transaction });
 
-      // 2. Persona (Admin)
+      // 2. Persona (Alirio)
       await queryInterface.bulkInsert('people', [
-        { first_name: 'Admin', last_name: 'System', document_number: 'V-00000000', phone: '0000000000' }
+        { first_name: 'Alirio', last_name: 'Freytez', document_number: '28019240', phone: '0000000000' }
       ], { transaction });
 
-      // Obtener el ID de la persona, del rol de superadmin y del user_type admin
+      // Obtener IDs
       const [people] = await queryInterface.sequelize.query(
-        `SELECT id FROM people WHERE document_number = 'V-00000000'`,
+        `SELECT id FROM people WHERE document_number = '28019240'`,
         { transaction }
       );
       
-      const [roles] = await queryInterface.sequelize.query(
+      const [rolesAdmin] = await queryInterface.sequelize.query(
         `SELECT id FROM roles WHERE code = 'SUPERADMIN'`,
         { transaction }
       );
 
-      const [userTypes] = await queryInterface.sequelize.query(
+      const [userTypesAdmin] = await queryInterface.sequelize.query(
         `SELECT id FROM user_types WHERE code = 'ADMIN'`,
         { transaction }
       );
 
-      const personId = people[0].id;
-      const roleId = roles[0].id;
-      const userTypeId = userTypes[0].id;
+      const [userTypesClient] = await queryInterface.sequelize.query(
+        `SELECT id FROM user_types WHERE code = 'CLIENT'`,
+        { transaction }
+      );
 
-      // 3. User
-      const passwordHash = bcrypt.hashSync('Admin123$', 10);
+      const [countryVE] = await queryInterface.sequelize.query(
+        `SELECT id FROM countries WHERE iso_code = 'VE'`,
+        { transaction }
+      );
+
+      const personId = people[0].id;
+      const roleAdminId = rolesAdmin[0].id;
+      const userTypeAdminId = userTypesAdmin[0].id;
+      const userTypeClientId = userTypesClient[0].id;
+      const veId = countryVE[0].id;
+
+      // 3. Insertar Clients y Employees
+      await queryInterface.bulkInsert('employees', [
+        { person: personId }
+      ], { transaction });
+
+      await queryInterface.bulkInsert('clients', [
+        { person: personId, origin_country: veId }
+      ], { transaction });
+
+      // 4. Users (Admin and Client)
+      const passwordHash = bcrypt.hashSync('28019240', 10);
       await queryInterface.bulkInsert('users', [
         { 
-          username: 'admin',
-          user_type: userTypeId,
+          username: '28019240R', // Admin username
+          user_type: userTypeAdminId,
           person: personId,
-          email: 'admin@remesas.com',
+          email: 'pastoralirio6589@gmail.com',
+          password_hash: passwordHash
+        },
+        { 
+          username: '28019240', // Client username
+          user_type: userTypeClientId,
+          person: personId,
+          email: 'pastoralirio6589@gmail.com',
           password_hash: passwordHash
         }
       ], { transaction });
 
-      // Obtener ID del usuario insertado
+      // Obtener ID del usuario insertado (Admin) para asignarle el rol SUPERADMIN
       const [users] = await queryInterface.sequelize.query(
-        `SELECT id FROM users WHERE email = 'admin@remesas.com'`,
+        `SELECT id FROM users WHERE username = '28019240R'`,
         { transaction }
       );
-      const userId = users[0].id;
+      const userAdminId = users[0].id;
 
-      // 4. Asignar rol al usuario
+      // 5. Asignar rol al usuario admin
       await queryInterface.bulkInsert('user_roles', [
-        { user_id: userId, role: roleId }
+        { user_id: userAdminId, role: roleAdminId }
       ], { transaction });
 
       await transaction.commit();
@@ -73,8 +101,10 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
     try {
       await queryInterface.bulkDelete('user_roles', null, { transaction });
-      await queryInterface.bulkDelete('users', { email: 'admin@remesas.com' }, { transaction });
-      await queryInterface.bulkDelete('people', { document_number: 'V-00000000' }, { transaction });
+      await queryInterface.bulkDelete('users', { email: 'pastoralirio6589@gmail.com' }, { transaction });
+      await queryInterface.bulkDelete('clients', null, { transaction });
+      await queryInterface.bulkDelete('employees', null, { transaction });
+      await queryInterface.bulkDelete('people', { document_number: '28019240' }, { transaction });
       await queryInterface.bulkDelete('roles', null, { transaction });
       await transaction.commit();
     } catch (err) {

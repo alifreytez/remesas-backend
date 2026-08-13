@@ -26,20 +26,25 @@ export default class ContactsModel extends SequelizeModelBase {
                 type: DataTypes.STRING(255),
                 enhancedData: { uiLabel: 'Nombre del Contacto', order: 3 },
             },
-            countryMethod: {
+            document: {
+                allowNull: false,
+                type: DataTypes.STRING(100),
+                enhancedData: { uiLabel: 'Documento de Identidad', order: 4 },
+            },
+            country: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
                 enhancedData: { 
-                    uiLabel: 'Método País', 
-                    order: 4,
+                    uiLabel: 'País de Residencia', 
+                    order: 5,
                     inputType: 'select' as const,
-                    relatedCatalog: 'country-receiving-methods'
+                    relatedCatalog: 'countries'
                 },
             },
             contactData: {
                 allowNull: false,
                 type: DataTypes.JSONB,
-                enhancedData: { uiLabel: 'Datos del Contacto', order: 5 },
+                enhancedData: { uiLabel: 'Cuentas Bancarias', order: 6 },
             },
         };
     }
@@ -63,8 +68,8 @@ export default class ContactsModel extends SequelizeModelBase {
             },
             {
                 type: 'belongsTo',
-                target: 'CountryReceivingMethods',
-                options: { foreignKey: 'countryMethod', as: '_CountryMethod' },
+                target: 'Countries',
+                options: { foreignKey: 'country', as: '_Country' },
             }
         ];
     }

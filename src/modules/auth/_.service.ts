@@ -257,7 +257,7 @@ class AuthService extends BaseService {
     }
 
     async register(data: Record<string, any>) {
-        const { firstName, lastName, document, phone, email, password, country } = data;
+        const { firstName, lastName, document, phone, email, password, country, type = 'CLIENT' } = data;
 
         if (!firstName || !lastName || !document || !email || !password || !country) {
             throw new BadRequestError('Por favor, completa todos los campos del formulario para poder registrarte.');
@@ -290,11 +290,11 @@ class AuthService extends BaseService {
                 );
             }
 
-            // 2. Obtener el tipo de usuario "Cliente"
-            let userType = await this.UserTypes.getOne({ code: 'CLIENT' }, { transaction });
+            // 2. Obtener el tipo de usuario
+            let userType = await this.UserTypes.getOne({ code: type }, { transaction });
             if (!userType) {
                 userType = await this.UserTypes.create(
-                    { code: 'CLIENT', description: 'Cliente Regular' },
+                    { code: type, description: type === 'CLIENT' ? 'Cliente Regular' : 'Administrador/Empleado' },
                     { transaction }
                 );
             }
@@ -311,15 +311,16 @@ class AuthService extends BaseService {
                 throw new BadRequestError('Este correo electrónico ya se encuentra registrado a nombre de otra persona.');
             }
 
-            // 3. Generar Username (Documento + 2 letras aleatorias minúsculas)
-            const randomLetters = customAlphabet('abcdefghijklmnopqrstuvwxyz', 2);
-            let baseUsername = `${document}${randomLetters()}`.toLowerCase();
+            // 3. Generar Username (Documento para Cliente, Documento+R para Administrador)
+            let baseUsername = document;
+            if (type !== 'CLIENT') {
+                baseUsername = `${document}R`;
+            }
             
-            // Asegurarnos de que el username no exista (extremadamente raro, pero posible)
+            // Asegurarnos de que el username no exista
             let existingUser = await this.Users.getOne({ username: baseUsername }, { transaction });
-            while(existingUser) {
-                baseUsername = `${document}${randomLetters()}`.toLowerCase();
-                existingUser = await this.Users.getOne({ username: baseUsername }, { transaction });
+            if (existingUser) {
+                throw new BadRequestError('Este documento de identidad ya tiene una cuenta registrada con este rol.');
             }
 
             // 4. Crear el Usuario
@@ -357,13 +358,22 @@ class AuthService extends BaseService {
                 }
             }
 
-            await this.Clients.create(
-                {
-                    person: person.id,
-                    originCountry: originCountryId,
-                },
-                { transaction }
-            );
+            if (type === 'CLIENT') {
+                await this.Clients.create(
+                    {
+                        person: person.id,
+                        originCountry: originCountryId,
+                    },
+                    { transaction }
+                );
+            } else {
+                await this.Employees.create(
+                    {
+                        person: person.id,
+                    },
+                    { transaction }
+                );
+            }
 
             return {
                 username: user.username,
@@ -392,6 +402,10 @@ class AuthService extends BaseService {
 
     private get Clients() {
         return Database.repository('main', 'clients') as SequelizeRepositoryBase;
+    }
+
+    private get Employees() {
+        return Database.repository('main', 'employees') as SequelizeRepositoryBase;
     }
 }
 
