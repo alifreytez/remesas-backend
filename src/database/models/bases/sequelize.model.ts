@@ -48,7 +48,7 @@ export type EnhancedColumnOptions = ModelAttributeColumnOptions & {
         /** Posición del campo al renderizarse en tablas y formularios (menor número = primero). */
         order?: number;
         /** Fuerza un tipo de input HTML específico (anula la inferencia basada en DataType). */
-        inputType?: 'text' | 'textarea' | 'number' | 'password' | 'email' | 'color' | 'select' | 'radio' | 'date';
+        inputType?: 'text' | 'textarea' | 'number' | 'password' | 'email' | 'color' | 'select' | 'radio' | 'date' | 'json-table';
         /** Si inputType es 'select', el nombre del catálogo relacionado. */
         relatedCatalog?: string;
         /** Texto de sugerencia (placeholder) visible en el input del formulario. */
