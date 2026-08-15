@@ -5,55 +5,60 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      // Obtenemos los IDs de los países
-      const [countries] = await queryInterface.sequelize.query(
-        'SELECT id, iso_code FROM countries;'
+      // Obtenemos los IDs de las monedas
+      const [currencies] = await queryInterface.sequelize.query(
+        'SELECT id, iso_code FROM currencies;', { transaction }
       );
 
-      const getCountryId = (isoCode) => {
-        const country = countries.find(c => c.iso_code === isoCode);
-        return country ? country.id : null;
+      const getCurrencyId = (isoCode) => {
+        const c = currencies.find(c => c.iso_code === isoCode);
+        return c ? c.id : null;
       };
 
-      const veId = getCountryId('VE');
-      const coId = getCountryId('CO');
-      const usId = getCountryId('US');
+      const vesId = getCurrencyId('VES');
+      const penId = getCurrencyId('PEN');
+      const clpId = getCurrencyId('CLP');
+      const usdId = getCurrencyId('USD');
 
       const now = new Date();
-
       const ratesToInsert = [];
 
-      // Si tenemos los países requeridos
-      if (usId && veId) {
+      // USA a Venezuela (USD a VES)
+      if (usdId && vesId) {
         ratesToInsert.push({
-          initial_country: usId,
-          secondary_country: veId,
-          rate: 42.50, // Ejemplo: 1 USD = 42.50 VES
-          created_by: 1, // Suponiendo que el Admin (ID 1) lo creó
+          initial_currency: usdId,
+          secondary_currency: vesId,
+          rate: 42.50, // 1 USD = 42.50 VES
+          created_by: null, 
           created_at: now,
-          updated_at: now
+          updated_at: now,
+          deleted_at: null
         });
       }
 
-      if (coId && veId) {
+      // Perú a Venezuela (PEN a VES)
+      if (penId && vesId) {
         ratesToInsert.push({
-          initial_country: coId,
-          secondary_country: veId,
-          rate: 0.0095, // Ejemplo: 1 COP = 0.0095 VES
-          created_by: 1,
+          initial_currency: penId,
+          secondary_currency: vesId,
+          rate: 11.20, // 1 PEN = 11.20 VES
+          created_by: null,
           created_at: now,
-          updated_at: now
+          updated_at: now,
+          deleted_at: null
         });
       }
 
-      if (usId && coId) {
+      // Chile a Venezuela (CLP a VES)
+      if (clpId && vesId) {
         ratesToInsert.push({
-          initial_country: usId,
-          secondary_country: coId,
-          rate: 4050.00, // Ejemplo: 1 USD = 4050 COP
-          created_by: 1,
+          initial_currency: clpId,
+          secondary_currency: vesId,
+          rate: 0.045, // 1 CLP = 0.045 VES
+          created_by: null,
           created_at: now,
-          updated_at: now
+          updated_at: now,
+          deleted_at: null
         });
       }
 

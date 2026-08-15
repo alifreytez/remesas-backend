@@ -6,88 +6,185 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      // 1. Roles
+      // ============================================
+      // 1. CREACIÓN DE ROLES Y JERARQUÍA (HERENCIA)
+      // ============================================
       await queryInterface.bulkInsert('roles', [
         { code: 'SUPERADMIN', description: 'Super Administrador del Sistema' },
-        { code: 'OPERATOR', description: 'Operador de Remesas' },
-        { code: 'CLIENT', description: 'Cliente Regular' }
+        { code: 'MANAGER', description: 'Gerente' },
+        { code: 'OPERATOR', description: 'Operador de Remesas' }
       ], { transaction });
 
-      // 2. Persona (Alirio)
-      await queryInterface.bulkInsert('people', [
-        { first_name: 'Alirio', last_name: 'Freytez', document_number: '28019240', phone: '0000000000' }
-      ], { transaction });
+      const [rolesSuperAdmin] = await queryInterface.sequelize.query(`SELECT id FROM roles WHERE code = 'SUPERADMIN'`, { transaction });
+      const [rolesManager] = await queryInterface.sequelize.query(`SELECT id FROM roles WHERE code = 'MANAGER'`, { transaction });
+      const [rolesOperator] = await queryInterface.sequelize.query(`SELECT id FROM roles WHERE code = 'OPERATOR'`, { transaction });
 
-      // Obtener IDs
-      const [people] = await queryInterface.sequelize.query(
-        `SELECT id FROM people WHERE document_number = '28019240'`,
-        { transaction }
-      );
+      const roleSuperAdminId = rolesSuperAdmin[0].id;
+      const roleManagerId = rolesManager[0].id;
+      const roleOperatorId = rolesOperator[0].id;
+
+      // Herencia de roles (El child hereda los permisos del parent)
+      await queryInterface.bulkInsert('role_inheritances', [
+        { child_role: roleSuperAdminId, parent_role: roleManagerId }, // SuperAdmin hereda de Manager
+        { child_role: roleManagerId, parent_role: roleOperatorId }    // Manager hereda de Operator
+      ], { transaction, ignoreDuplicates: true });
+
+      // ============================================
+      // 2. CREACIÓN DE PERMISOS BASE
+      // ============================================
+      await queryInterface.bulkInsert('permission_types', [
+        { code: 'UI', description: 'Interfaz de Usuario' },
+        { code: 'API', description: 'Rutas de API' }
+      ], { transaction, ignoreDuplicates: true });
+
+      await queryInterface.bulkInsert('actions', [
+        { code: 'VIEW', description: 'Acción de Vista' },
+        { code: 'CREATE', description: 'Acción de Creación' },
+        { code: 'UPDATE', description: 'Acción de Actualización' },
+        { code: 'DELETE', description: 'Acción de Eliminación' },
+        { code: 'MANAGE', description: 'Control Total' }
+      ], { transaction, ignoreDuplicates: true });
+
+      await queryInterface.bulkInsert('resources', [
+        { code: 'DASHBOARD_STATS', description: 'Ver Dashboard Estadísticas' },
+        { code: 'REMITTANCES', description: 'Gestión de Remesas' },
+        { code: 'USERS', description: 'Gestión de Usuarios' },
+        { code: 'CONFIGS', description: 'Configuraciones del Sistema' }
+      ], { transaction, ignoreDuplicates: true });
+
+      const [ptUI] = await queryInterface.sequelize.query(`SELECT id FROM permission_types WHERE code = 'UI'`, { transaction });
+      const [ptAPI] = await queryInterface.sequelize.query(`SELECT id FROM permission_types WHERE code = 'API'`, { transaction });
       
-      const [rolesAdmin] = await queryInterface.sequelize.query(
-        `SELECT id FROM roles WHERE code = 'SUPERADMIN'`,
-        { transaction }
-      );
+      const ptUIId = ptUI[0].id;
+      const ptAPIId = ptAPI[0].id;
 
-      const [userTypesAdmin] = await queryInterface.sequelize.query(
-        `SELECT id FROM user_types WHERE code = 'ADMIN'`,
-        { transaction }
-      );
+      const [actions] = await queryInterface.sequelize.query(`SELECT id, code FROM actions`, { transaction });
+      const [resources] = await queryInterface.sequelize.query(`SELECT id, code FROM resources`, { transaction });
 
-      const [userTypesClient] = await queryInterface.sequelize.query(
-        `SELECT id FROM user_types WHERE code = 'CLIENT'`,
-        { transaction }
-      );
+      // Generar todas las combinaciones lógicas
+      const permissionsToInsert = [];
+      const permissionTypes = [{ id: ptUIId, code: 'UI' }, { id: ptAPIId, code: 'API' }];
+      
+      for (const pt of permissionTypes) {
+        for (const act of actions) {
+          for (const res of resources) {
+            permissionsToInsert.push({
+              permission_type: pt.id,
+              action: act.id,
+              resource: res.id
+            });
+          }
+        }
+      }
 
-      const [countryVE] = await queryInterface.sequelize.query(
-        `SELECT id FROM countries WHERE iso_code = 'VE'`,
-        { transaction }
-      );
+      await queryInterface.bulkInsert('permissions', permissionsToInsert, { transaction, ignoreDuplicates: true });
 
-      const personId = people[0].id;
-      const roleAdminId = rolesAdmin[0].id;
+      const [allPerms] = await queryInterface.sequelize.query(`
+        SELECT p.id, r.code as resource_code, a.code as action_code, pt.code as type_code
+        FROM permissions p
+        JOIN resources r ON p.resource = r.id
+        JOIN actions a ON p.action = a.id
+        JOIN permission_types pt ON p.permission_type = pt.id
+      `, { transaction });
+
+      // Asignar Permisos a Roles (Con la herencia, solo necesitamos asignar lo que es único o base para cada nivel)
+      // - OPERATOR solo interactúa con Remesas y Dashboard
+      const operatorPermIds = allPerms.filter(p => ['DASHBOARD_STATS', 'REMITTANCES'].includes(p.resource_code)).map(p => p.id);
+      
+      // - MANAGER ve y gestiona Usuarios adicionalmente a lo del Operator
+      const managerPermIds = allPerms.filter(p => ['USERS'].includes(p.resource_code)).map(p => p.id);
+      
+      // - SUPERADMIN gestiona Configuraciones adicionalmente a lo del Manager
+      const superAdminPermIds = allPerms.filter(p => ['CONFIGS'].includes(p.resource_code)).map(p => p.id);
+
+      const rolePermissionsToInsert = [
+        ...operatorPermIds.map(id => ({ role: roleOperatorId, permission: id })),
+        ...managerPermIds.map(id => ({ role: roleManagerId, permission: id })),
+        ...superAdminPermIds.map(id => ({ role: roleSuperAdminId, permission: id }))
+      ];
+
+      await queryInterface.bulkInsert('role_permissions', rolePermissionsToInsert, { transaction, ignoreDuplicates: true });
+
+      // ============================================
+      // 3. CREACIÓN DE USUARIOS
+      // ============================================
+      await queryInterface.bulkInsert('people', [
+        { first_name: 'Alirio', last_name: 'Freytez', document_number: '28019240', phone: '0000000000' },
+        { first_name: 'Carlos', last_name: 'Gomez', document_number: '123456789', phone: '1111111111' },
+        { first_name: 'Ana', last_name: 'Martinez', document_number: '987654321', phone: '2222222222' }
+      ], { transaction });
+
+      const [peopleAdmin] = await queryInterface.sequelize.query(`SELECT id FROM people WHERE document_number = '28019240'`, { transaction });
+      const [peopleOperator] = await queryInterface.sequelize.query(`SELECT id FROM people WHERE document_number = '123456789'`, { transaction });
+      const [peopleManager] = await queryInterface.sequelize.query(`SELECT id FROM people WHERE document_number = '987654321'`, { transaction });
+
+      const [userTypesAdmin] = await queryInterface.sequelize.query(`SELECT id FROM user_types WHERE code = 'ADMIN'`, { transaction });
+      const [userTypesClient] = await queryInterface.sequelize.query(`SELECT id FROM user_types WHERE code = 'CLIENT'`, { transaction });
+      const [countryVE] = await queryInterface.sequelize.query(`SELECT id FROM countries WHERE iso_code = 'VE'`, { transaction });
+
+      const personAdminId = peopleAdmin[0].id;
+      const personOpId = peopleOperator[0].id;
+      const personManId = peopleManager[0].id;
+      
       const userTypeAdminId = userTypesAdmin[0].id;
       const userTypeClientId = userTypesClient[0].id;
       const veId = countryVE[0].id;
 
-      // 3. Insertar Clients y Employees
       await queryInterface.bulkInsert('employees', [
-        { person: personId }
+        { person: personAdminId },
+        { person: personOpId },
+        { person: personManId }
       ], { transaction });
 
       await queryInterface.bulkInsert('clients', [
-        { person: personId, origin_country: veId }
+        { person: personAdminId, origin_country: veId },
+        { person: personOpId, origin_country: veId },
+        { person: personManId, origin_country: veId }
       ], { transaction });
 
-      // 4. Users (Admin and Client)
-      const passwordHash = bcrypt.hashSync('28019240', 10);
+      const passAdmin = bcrypt.hashSync('28019240', 10);
+      const passOp = bcrypt.hashSync('123456789', 10);
+      const passMan = bcrypt.hashSync('987654321', 10);
+      
       await queryInterface.bulkInsert('users', [
         { 
-          username: '28019240R', // Admin username
+          username: 'R28019240',
           user_type: userTypeAdminId,
-          person: personId,
+          person: personAdminId,
           email: 'pastoralirio6589@gmail.com',
-          password_hash: passwordHash
+          password_hash: passAdmin
         },
         { 
-          username: '28019240', // Client username
+          username: '28019240',
           user_type: userTypeClientId,
-          person: personId,
+          person: personAdminId,
           email: 'pastoralirio6589@gmail.com',
-          password_hash: passwordHash
+          password_hash: passAdmin
+        },
+        { 
+          username: 'R123456789',
+          user_type: userTypeAdminId, 
+          person: personOpId,
+          email: 'operador@remesas.com',
+          password_hash: passOp
+        },
+        { 
+          username: 'R987654321',
+          user_type: userTypeAdminId, 
+          person: personManId,
+          email: 'gerente@remesas.com',
+          password_hash: passMan
         }
       ], { transaction });
 
-      // Obtener ID del usuario insertado (Admin) para asignarle el rol SUPERADMIN
-      const [users] = await queryInterface.sequelize.query(
-        `SELECT id FROM users WHERE username = '28019240R'`,
-        { transaction }
-      );
-      const userAdminId = users[0].id;
+      const [uAdmin] = await queryInterface.sequelize.query(`SELECT id FROM users WHERE username = 'R28019240'`, { transaction });
+      const [uOp] = await queryInterface.sequelize.query(`SELECT id FROM users WHERE username = 'R123456789'`, { transaction });
+      const [uMan] = await queryInterface.sequelize.query(`SELECT id FROM users WHERE username = 'R987654321'`, { transaction });
 
-      // 5. Asignar rol al usuario admin
       await queryInterface.bulkInsert('user_roles', [
-        { user_id: userAdminId, role: roleAdminId }
+        { user_id: uAdmin[0].id, role: roleSuperAdminId },
+        { user_id: uOp[0].id, role: roleOperatorId },
+        { user_id: uMan[0].id, role: roleManagerId }
       ], { transaction });
 
       await transaction.commit();
@@ -101,10 +198,20 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
     try {
       await queryInterface.bulkDelete('user_roles', null, { transaction });
-      await queryInterface.bulkDelete('users', { email: 'pastoralirio6589@gmail.com' }, { transaction });
+      await queryInterface.bulkDelete('users', { 
+          username: ['R28019240', '28019240', 'R123456789', 'R987654321'] 
+      }, { transaction });
       await queryInterface.bulkDelete('clients', null, { transaction });
       await queryInterface.bulkDelete('employees', null, { transaction });
-      await queryInterface.bulkDelete('people', { document_number: '28019240' }, { transaction });
+      await queryInterface.bulkDelete('people', { 
+          document_number: ['28019240', '123456789', '987654321'] 
+      }, { transaction });
+      await queryInterface.bulkDelete('role_permissions', null, { transaction });
+      await queryInterface.bulkDelete('permissions', null, { transaction });
+      await queryInterface.bulkDelete('resources', null, { transaction });
+      await queryInterface.bulkDelete('actions', null, { transaction });
+      await queryInterface.bulkDelete('permission_types', null, { transaction });
+      await queryInterface.bulkDelete('role_inheritances', null, { transaction });
       await queryInterface.bulkDelete('roles', null, { transaction });
       await transaction.commit();
     } catch (err) {

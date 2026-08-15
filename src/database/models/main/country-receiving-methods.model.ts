@@ -47,6 +47,7 @@ export default class CountryReceivingMethodsModel extends SequelizeModelBase {
             name: 'Métodos por País',
             appRawName: 'country-receiving-methods',
             tableName: 'country_receiving_methods',
+            displayField: 'id',
             isBasicTable: true,
             publicAccess: true,
         };

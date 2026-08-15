@@ -26,7 +26,11 @@ export default class ReceivingMethodsModel extends SequelizeModelBase {
             fieldsConfig: {
                 allowNull: true,
                 type: DataTypes.JSONB,
-                enhancedData: { uiLabel: 'Configuración de Campos', order: 4 },
+                enhancedData: { 
+                    uiLabel: 'Configuración de Campos', 
+                    order: 4,
+                    inputType: 'json-table' as const
+                },
             }
         };
     }

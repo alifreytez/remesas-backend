@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { type RelationsReturn, SequelizeModelBase } from '@database/models/bases/sequelize.model.js';
 
-export default class PlatformBankAccountsModel extends SequelizeModelBase {
+export default class BankReceivingMethodsModel extends SequelizeModelBase {
     static definition() {
         return {
             id: {
@@ -14,6 +14,7 @@ export default class PlatformBankAccountsModel extends SequelizeModelBase {
             bank: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
+                unique: 'unique_bank_method',
                 enhancedData: { 
                     uiLabel: 'Banco', 
                     order: 2,
@@ -21,36 +22,34 @@ export default class PlatformBankAccountsModel extends SequelizeModelBase {
                     relatedCatalog: 'banks'
                 },
             },
-            accountDetails: {
-                allowNull: false,
-                type: DataTypes.JSONB,
-                enhancedData: { uiLabel: 'Detalles de la Cuenta', order: 3 },
-            },
-            currency: {
+            receivingMethod: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
+                unique: 'unique_bank_method',
                 enhancedData: { 
-                    uiLabel: 'Moneda', 
-                    order: 4,
+                    uiLabel: 'Método de Recepción', 
+                    order: 3,
                     inputType: 'select' as const,
-                    relatedCatalog: 'currencies'
+                    relatedCatalog: 'receiving-methods'
                 },
             },
             isActive: {
                 allowNull: false,
                 type: DataTypes.BOOLEAN,
                 defaultValue: true,
-                enhancedData: { uiLabel: '¿Está Activa?', order: 4 },
-            },
+                enhancedData: { uiLabel: 'Activo', order: 4 },
+            }
         };
     }
 
     static config() {
         return {
-            name: 'Cuentas Bancarias de Plataforma',
-            appRawName: 'platform-bank-accounts',
-            tableName: 'platform_bank_accounts',
-            displayField: 'id', // Ideally a virtual field with Bank name + Account Number, but keeping simple for now
+            name: 'Métodos por Banco',
+            appRawName: 'bank-receiving-methods',
+            tableName: 'bank_receiving_methods',
+            displayField: 'id',
+            isBasicTable: true,
+            publicAccess: true,
         };
     }
 
@@ -63,8 +62,8 @@ export default class PlatformBankAccountsModel extends SequelizeModelBase {
             },
             {
                 type: 'belongsTo',
-                target: 'Currencies',
-                options: { foreignKey: 'currency', as: '_Currency' },
+                target: 'ReceivingMethods',
+                options: { foreignKey: 'receivingMethod', as: '_ReceivingMethod' },
             }
         ];
     }

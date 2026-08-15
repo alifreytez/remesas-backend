@@ -22,10 +22,15 @@ export default class CountriesModel extends SequelizeModelBase {
                 type: DataTypes.STRING(100),
                 enhancedData: { uiLabel: 'Nombre del País', order: 3 },
             },
-            currencySymbol: {
+            nationalCurrency: {
                 allowNull: false,
-                type: DataTypes.STRING(10),
-                enhancedData: { uiLabel: 'Símbolo Moneda', order: 4 },
+                type: DataTypes.INTEGER,
+                enhancedData: { 
+                    uiLabel: 'Moneda Oficial', 
+                    order: 4,
+                    inputType: 'select' as const,
+                    relatedCatalog: 'currencies'
+                },
             },
         };
     }
@@ -42,6 +47,12 @@ export default class CountriesModel extends SequelizeModelBase {
     }
 
     static relations(): RelationsReturn {
-        return [];
+        return [
+            {
+                type: 'belongsTo',
+                target: 'Currencies',
+                options: { foreignKey: 'nationalCurrency', as: '_NationalCurrency' },
+            }
+        ];
     }
 }

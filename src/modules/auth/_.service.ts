@@ -29,8 +29,12 @@ class AuthService extends BaseService {
             throw new BadRequestError('No se proveyó la contraseña.');
         }
 
-        const foundUser = (await this.Users.getOne({ username })) as Record<string, any>;
-        if (foundUser == null || !(await BcryptUtil.compare(password, foundUser.passwordHash))) {
+        const foundUser = (await this.Users.getOne(
+            { username },
+            { relations: [{ association: '_UserType' }] }
+        )) as Record<string, any>;
+        const pHash = foundUser?.passwordHash || foundUser?.password_hash;
+        if (foundUser == null || !(await BcryptUtil.compare(password, pHash))) {
             throw new AuthError('Credenciales inválidas', {
                 code: 'INVALID_LOGIN',
             });
@@ -41,6 +45,7 @@ class AuthService extends BaseService {
             deviceId: deviceId || null,
             username: foundUser.username,
             email: foundUser.email,
+            type: foundUser._UserType?.code || 'CLIENT', // Añadimos el tipo de usuario
         };
 
         const accessToken = JWTUtil.generateAccessToken(payload as any);
@@ -96,9 +101,10 @@ class AuthService extends BaseService {
         }
 
         const userId = savedSession.userId;
-        const foundUser = (await this.Users.getOne({
-            id: userId,
-        })) as Record<string, any>;
+        const foundUser = (await this.Users.getOne(
+            { id: userId },
+            { relations: [{ association: '_UserType' }] }
+        )) as Record<string, any>;
         if (!foundUser) {
             await this.UserSessions.delete({ id: savedSession.id });
             throw new AuthError('El usuario asociado a esta sesión ya no existe.', { code: 'USER_NOT_FOUND' });
@@ -108,6 +114,7 @@ class AuthService extends BaseService {
             id: foundUser.id,
             deviceId: deviceId || savedSession.deviceId || null,
             email: foundUser.email,
+            type: foundUser._UserType?.code || 'CLIENT', // Añadimos el tipo de usuario
         };
 
         await tokenBlacklistService.blacklistTokenAtRefresh(oldJti);
@@ -314,7 +321,7 @@ class AuthService extends BaseService {
             // 3. Generar Username (Documento para Cliente, Documento+R para Administrador)
             let baseUsername = document;
             if (type !== 'CLIENT') {
-                baseUsername = `${document}R`;
+                baseUsername = `R${document}`;
             }
             
             // Asegurarnos de que el username no exista

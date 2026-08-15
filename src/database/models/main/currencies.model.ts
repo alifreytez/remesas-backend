@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { type RelationsReturn, SequelizeModelBase } from '@database/models/bases/sequelize.model.js';
 
-export default class BanksModel extends SequelizeModelBase {
+export default class CurrenciesModel extends SequelizeModelBase {
     static definition() {
         return {
             id: {
@@ -11,24 +11,30 @@ export default class BanksModel extends SequelizeModelBase {
                 autoIncrement: true,
                 enhancedData: { visible: false, order: 1 },
             },
+            isoCode: {
+                allowNull: false,
+                type: DataTypes.STRING(3),
+                unique: true,
+                enhancedData: { uiLabel: 'Código ISO', order: 2 },
+            },
             name: {
                 allowNull: false,
                 type: DataTypes.STRING(100),
-                enhancedData: { uiLabel: 'Nombre del Banco', order: 2 },
+                enhancedData: { uiLabel: 'Nombre de Moneda', order: 3 },
             },
-            code: {
+            symbol: {
                 allowNull: false,
-                type: DataTypes.STRING(50),
-                enhancedData: { uiLabel: 'Código Bancario', order: 3 },
+                type: DataTypes.STRING(10),
+                enhancedData: { uiLabel: 'Símbolo', order: 4 },
             },
         };
     }
 
     static config() {
         return {
-            name: 'Bancos',
-            appRawName: 'banks',
-            tableName: 'banks',
+            name: 'Monedas',
+            appRawName: 'currencies',
+            tableName: 'currencies',
             displayField: 'name',
             isBasicTable: true,
             publicAccess: true,

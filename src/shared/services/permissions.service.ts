@@ -48,7 +48,7 @@ export class PermissionsService {
 
         const permStringMap = new Map<string | number, string>();
         permissions.forEach((p: any) => {
-            const tipCode = tipMap.get(p.permissionType);
+            const tipCode = tipMap.get(p.permissionType || p.permission_type);
             const accCode = accMap.get(p.action);
             const recCode = recMap.get(p.resource);
             if (tipCode && accCode && recCode) {
@@ -90,9 +90,11 @@ export class PermissionsService {
             visited.add(strId);
 
             roleInheritances.forEach((row: any) => {
-                if (String(row.childRole) === strId && row.parentRole != null) {
-                    result.push(row.parentRole);
-                    result.push(...getInheritedRoleIds(row.parentRole, visited));
+                const childRole = row.childRole || row.child_role;
+                const parentRole = row.parentRole || row.parent_role;
+                if (String(childRole) === strId && parentRole != null) {
+                    result.push(parentRole);
+                    result.push(...getInheritedRoleIds(parentRole, visited));
                 }
             });
             return result;
@@ -149,9 +151,11 @@ export class PermissionsService {
             visited.add(strId);
 
             roleInheritances.forEach((row: any) => {
-                if (String(row.childRole) === strId && row.parentRole != null) {
-                    result.push(row.parentRole);
-                    result.push(...getInheritedRoleIds(row.parentRole, visited));
+                const childRole = row.childRole || row.child_role;
+                const parentRole = row.parentRole || row.parent_role;
+                if (String(childRole) === strId && parentRole != null) {
+                    result.push(parentRole);
+                    result.push(...getInheritedRoleIds(parentRole, visited));
                 }
             });
             return result;

@@ -11,24 +11,24 @@ export default class ExchangeRatesModel extends SequelizeModelBase {
                 autoIncrement: true,
                 enhancedData: { visible: false, order: 1 },
             },
-            initialCountry: {
+            initialCurrency: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
                 enhancedData: { 
-                    uiLabel: 'País Inicial', 
+                    uiLabel: 'Moneda Inicial', 
                     order: 2,
                     inputType: 'select' as const,
-                    relatedCatalog: 'countries'
+                    relatedCatalog: 'currencies'
                 },
             },
-            secondaryCountry: {
+            secondaryCurrency: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
                 enhancedData: { 
-                    uiLabel: 'País Secundario', 
+                    uiLabel: 'Moneda Destino', 
                     order: 3,
                     inputType: 'select' as const,
-                    relatedCatalog: 'countries'
+                    relatedCatalog: 'currencies'
                 },
             },
             rate: {
@@ -61,13 +61,13 @@ export default class ExchangeRatesModel extends SequelizeModelBase {
         return [
             {
                 type: 'belongsTo',
-                target: 'Countries',
-                options: { foreignKey: 'initialCountry', as: '_InitialCountry' },
+                target: 'Currencies',
+                options: { foreignKey: 'initialCurrency', as: '_InitialCurrency' },
             },
             {
                 type: 'belongsTo',
-                target: 'Countries',
-                options: { foreignKey: 'secondaryCountry', as: '_SecondaryCountry' },
+                target: 'Currencies',
+                options: { foreignKey: 'secondaryCurrency', as: '_SecondaryCurrency' },
             },
             {
                 type: 'belongsTo',

@@ -7,8 +7,8 @@ module.exports = {
     try {
       await queryInterface.createTable('exchange_rates', {
         id: { allowNull: false, autoIncrement: true, primaryKey: true, type: Sequelize.INTEGER },
-        initial_country: { type: Sequelize.INTEGER, allowNull: false },
-        secondary_country: { type: Sequelize.INTEGER, allowNull: false },
+        initial_currency: { type: Sequelize.INTEGER, allowNull: false },
+        secondary_currency: { type: Sequelize.INTEGER, allowNull: false },
         rate: { allowNull: false, type: Sequelize.DECIMAL(15, 4) },
         created_by: { type: Sequelize.INTEGER, allowNull: true },
         created_at: { allowNull: false, type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
@@ -18,10 +18,10 @@ module.exports = {
       await queryInterface.addConstraint(
         { tableName: 'exchange_rates' },
         {
-          fields: ['initial_country'],
+          fields: ['initial_currency'],
           type: 'foreign key',
-          name: 'fk_exchange_rates_initial_country',
-          references: { table: { tableName: 'countries' }, field: 'id' },
+          name: 'fk_exchange_rates_initial_currency',
+          references: { table: { tableName: 'currencies' }, field: 'id' },
           onDelete: 'NO ACTION',
           onUpdate: 'NO ACTION',
           transaction,
@@ -29,10 +29,10 @@ module.exports = {
       );      await queryInterface.addConstraint(
         { tableName: 'exchange_rates' },
         {
-          fields: ['secondary_country'],
+          fields: ['secondary_currency'],
           type: 'foreign key',
-          name: 'fk_exchange_rates_secondary_country',
-          references: { table: { tableName: 'countries' }, field: 'id' },
+          name: 'fk_exchange_rates_secondary_currency',
+          references: { table: { tableName: 'currencies' }, field: 'id' },
           onDelete: 'NO ACTION',
           onUpdate: 'NO ACTION',
           transaction,

@@ -9,7 +9,13 @@ module.exports = {
         id: { allowNull: false, autoIncrement: true, primaryKey: true, type: Sequelize.INTEGER },
         iso_code: { allowNull: false, type: Sequelize.STRING(5) },
         name: { allowNull: false, type: Sequelize.STRING(100) },
-        currency_symbol: { allowNull: false, type: Sequelize.STRING(10) },
+        national_currency: { 
+          type: Sequelize.INTEGER, 
+          allowNull: false,
+          references: { model: 'currencies', key: 'id' },
+          onUpdate: 'CASCADE',
+          onDelete: 'RESTRICT'
+        },
         created_at: { allowNull: false, type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
         updated_at: { allowNull: false, type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
         deleted_at: { type: Sequelize.DATE }

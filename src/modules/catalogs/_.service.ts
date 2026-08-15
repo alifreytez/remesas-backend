@@ -55,7 +55,7 @@ class BasicTablesService extends BaseService {
                 const fk = typeof (assoc as any).foreignKey === 'string' ? (assoc as any).foreignKey : (assoc as any).foreignKey?.name;
                 const targetModel = (assoc as any).target;
                 const targetCatalogName = targetModel.appRawName || targetModel.name;
-                const displayField = targetModel.instance?.displayField || targetModel.displayField;
+                const displayField = targetModel.config?.()?.displayField || targetModel.instance?.displayField || targetModel.displayField;
                 if (fk) {
                     foreignKeysMap.set(fk, { target: targetCatalogName, alias, displayField });
                 }
