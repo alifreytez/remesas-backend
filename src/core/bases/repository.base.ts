@@ -117,8 +117,6 @@ export abstract class BaseRepository<T, ID = string | number, M = unknown> {
 
     abstract getAll(options: GetAllOptions, conditions?: Partial<T> | Record<string, unknown> | WhereCondition): Promise<QueryResult<T>>;
 
-    abstract getAllActive?(options: GetAllOptions, conditions?: Partial<T> | Record<string, unknown> | WhereCondition): Promise<QueryResult<T>>;
-
     abstract getById(id: ID, operationOptions?: RepositoryOperationOptions): Promise<T | null>;
 
     abstract getOne(conditions: Partial<T> | Record<string, unknown> | WhereCondition, operationOptions?: RepositoryOperationOptions): Promise<T | null>;

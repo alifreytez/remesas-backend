@@ -34,14 +34,17 @@ module.exports = {
       // ============================================
       await queryInterface.bulkInsert('permission_types', [
         { code: 'UI', description: 'Interfaz de Usuario' },
-        { code: 'API', description: 'Rutas de API' }
+        { code: 'API', description: 'Rutas de API' },
+        { code: 'CRUD', description: 'Operaciones de Catálogo' }
       ], { transaction, ignoreDuplicates: true });
 
       await queryInterface.bulkInsert('actions', [
         { code: 'VIEW', description: 'Acción de Vista' },
+        { code: 'READ', description: 'Acción de Lectura' },
         { code: 'CREATE', description: 'Acción de Creación' },
         { code: 'UPDATE', description: 'Acción de Actualización' },
         { code: 'DELETE', description: 'Acción de Eliminación' },
+        { code: 'RESTORE', description: 'Acción de Restauración' },
         { code: 'MANAGE', description: 'Control Total' }
       ], { transaction, ignoreDuplicates: true });
 
@@ -49,21 +52,34 @@ module.exports = {
         { code: 'DASHBOARD_STATS', description: 'Ver Dashboard Estadísticas' },
         { code: 'REMITTANCES', description: 'Gestión de Remesas' },
         { code: 'USERS', description: 'Gestión de Usuarios' },
-        { code: 'CONFIGS', description: 'Configuraciones del Sistema' }
+        { code: 'CONFIGS', description: 'Configuraciones del Sistema' },
+        { code: 'BANK-RECEIVING-METHODS', description: 'Catálogo Métodos por Banco' },
+        { code: 'BANKS', description: 'Catálogo Bancos' },
+        { code: 'EXCHANGE-RATES', description: 'Catálogo Tasas de Cambio' },
+        { code: 'COUNTRIES', description: 'Catálogo Países' },
+        { code: 'CURRENCIES', description: 'Catálogo Monedas' },
+        { code: 'RECEIVING-METHODS', description: 'Catálogo Métodos de Recepción' },
+        { code: 'COUNTRY-RECEIVING-METHODS', description: 'Catálogo Métodos por País' },
+        { code: 'REMITTANCE-STATUSES', description: 'Catálogo Estados de Remesa' },
+        { code: 'USER-TYPES', description: 'Catálogo Tipos de Usuario' },
+        { code: 'ROLES', description: 'Catálogo Roles' },
+        { code: 'CONTACTS', description: 'Agenda de Contactos' }
       ], { transaction, ignoreDuplicates: true });
 
       const [ptUI] = await queryInterface.sequelize.query(`SELECT id FROM permission_types WHERE code = 'UI'`, { transaction });
       const [ptAPI] = await queryInterface.sequelize.query(`SELECT id FROM permission_types WHERE code = 'API'`, { transaction });
+      const [ptCRUD] = await queryInterface.sequelize.query(`SELECT id FROM permission_types WHERE code = 'CRUD'`, { transaction });
       
       const ptUIId = ptUI[0].id;
       const ptAPIId = ptAPI[0].id;
+      const ptCRUDId = ptCRUD[0].id;
 
       const [actions] = await queryInterface.sequelize.query(`SELECT id, code FROM actions`, { transaction });
       const [resources] = await queryInterface.sequelize.query(`SELECT id, code FROM resources`, { transaction });
 
       // Generar todas las combinaciones lógicas
       const permissionsToInsert = [];
-      const permissionTypes = [{ id: ptUIId, code: 'UI' }, { id: ptAPIId, code: 'API' }];
+      const permissionTypes = [{ id: ptUIId, code: 'UI' }, { id: ptAPIId, code: 'API' }, { id: ptCRUDId, code: 'CRUD' }];
       
       for (const pt of permissionTypes) {
         for (const act of actions) {
@@ -92,15 +108,13 @@ module.exports = {
       const operatorPermIds = allPerms.filter(p => ['DASHBOARD_STATS', 'REMITTANCES'].includes(p.resource_code)).map(p => p.id);
       
       // - MANAGER ve y gestiona Usuarios adicionalmente a lo del Operator
-      const managerPermIds = allPerms.filter(p => ['USERS'].includes(p.resource_code)).map(p => p.id);
+      const managerPermIds = allPerms.filter(p => ['USERS', 'CONTACTS'].includes(p.resource_code)).map(p => p.id);
       
-      // - SUPERADMIN gestiona Configuraciones adicionalmente a lo del Manager
-      const superAdminPermIds = allPerms.filter(p => ['CONFIGS'].includes(p.resource_code)).map(p => p.id);
+      // - SUPERADMIN ya no recibe asignaciones porque hace bypass global.
 
       const rolePermissionsToInsert = [
         ...operatorPermIds.map(id => ({ role: roleOperatorId, permission: id })),
-        ...managerPermIds.map(id => ({ role: roleManagerId, permission: id })),
-        ...superAdminPermIds.map(id => ({ role: roleSuperAdminId, permission: id }))
+        ...managerPermIds.map(id => ({ role: roleManagerId, permission: id }))
       ];
 
       await queryInterface.bulkInsert('role_permissions', rolePermissionsToInsert, { transaction, ignoreDuplicates: true });

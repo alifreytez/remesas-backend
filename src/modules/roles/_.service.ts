@@ -13,13 +13,13 @@ class RolesService extends BaseService {
     }
 
     async getAllFullRoles(filters: ProcessedQueryFilters) {
-        return await this.Roles.getAllFull(filters);
+        return await this.Roles.getAll(filters);
     }
 
-    async getFullRole({ id }: { id?: string | number }, filters: ProcessedQueryFilters) {
+    async getFullRole({ id }: { id?: string | number }) {
         if (!(Validator.isNotEmpty(id) && Validator.isObjectId(String(id)))) throw new BadRequestError(`Invalid id: ${id}`);
 
-        return await this.Roles.getFull(id as string | number, filters);
+        return await this.Roles.getById(id as string | number);
     }
 
     async updateRole(
@@ -81,7 +81,7 @@ class RolesService extends BaseService {
                 rows: Array<Record<string, any>>;
                 count: number;
             };
-            const users = (await this.RolesUsuarios.getAll({ attributes: ['id'], pagination: { offset: 0 }, order: [['id', 'asc']], qc: {} } as any, { rol: id })) as {
+            const users = (await this.RolesUsuarios.getAll({ attributes: ['id'], pagination: { offset: 0 }, order: [['id', 'asc']], qc: {} } as any, { role: id })) as {
                 rows: Array<Record<string, any>>;
                 count: number;
             };
@@ -118,15 +118,15 @@ class RolesService extends BaseService {
     }
 
     private get Roles() {
-        return Database.repository('main', 'auth-roles') as any;
+        return Database.repository('main', 'roles') as any;
     }
 
     private get RolesPermisos() {
-        return Database.repository('main', 'auth-roles-permisos') as any;
+        return Database.repository('main', 'role-permissions') as any;
     }
 
     private get RolesUsuarios() {
-        return Database.repository('main', 'auth-roles-usuarios') as any;
+        return Database.repository('main', 'user-roles') as any;
     }
 
     private get RolesEspecificaciones() {
@@ -138,7 +138,7 @@ class RolesService extends BaseService {
     }
 
     private get RolesHerencias() {
-        return Database.repository('main', 'auth-roles-herencias') as any;
+        return Database.repository('main', 'role-inheritances') as any;
     }
 }
 

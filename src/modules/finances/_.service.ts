@@ -8,7 +8,7 @@ class FinancesService extends BaseService {
     // --- TASAS DE CAMBIO ---
 
     async listRates(filters: ProcessedQueryFilters) {
-        return await this.ExchangeRates.getAllActive({
+        return await this.ExchangeRates.getAll({
             ...filters,
             relations: [
                 { association: '_InitialCountry' },
@@ -48,7 +48,7 @@ class FinancesService extends BaseService {
     // --- COMISIONES ---
 
     async listCommissions(filters: ProcessedQueryFilters) {
-        return await this.Commissions.getAllActive({
+        return await this.Commissions.getAll({
             ...filters,
             relations: [
                 { association: '_OriginCountry' },

@@ -11,7 +11,7 @@ export class PermissionsService {
     /**
      * Cachea en Redis exclusivamente las tablas de catálogo estructural y de asignaciones por rol
      */
-    private static async getCachedRbacTable(tableName: string, repoName: string): Promise<Array<Record<string, any>>> {
+    public static async getCachedRbacTable(tableName: string, repoName: string): Promise<Array<Record<string, any>>> {
         const cacheKey = `rbac:table:${tableName}`;
         try {
             const cached = await PermissionsService.cacheClient.get(cacheKey);
@@ -33,13 +33,14 @@ export class PermissionsService {
     }
 
     private static async getRbacCachedCatalogs() {
-        const [rolesPermissions, roleInheritances, permissions, actions, resources, permissionTypes] = await Promise.all([
+        const [rolesPermissions, roleInheritances, permissions, actions, resources, permissionTypes, rolesTable] = await Promise.all([
             PermissionsService.getCachedRbacTable('role_permissions', 'role-permissions'),
             PermissionsService.getCachedRbacTable('role_inheritances', 'role-inheritances'),
             PermissionsService.getCachedRbacTable('permissions', 'permissions'),
             PermissionsService.getCachedRbacTable('actions', 'actions'),
             PermissionsService.getCachedRbacTable('resources', 'resources'),
             PermissionsService.getCachedRbacTable('permission_types', 'permission-types'),
+            PermissionsService.getCachedRbacTable('roles', 'roles'),
         ]);
 
         const accMap = new Map<string | number, string>(actions.map((a: any) => [a.id, a.code]));
@@ -56,7 +57,9 @@ export class PermissionsService {
             }
         });
 
-        return { rolesPermissions, roleInheritances, permStringMap };
+        const roleMap = new Map<string | number, string>(rolesTable.map((r: any) => [r.id, r.code]));
+
+        return { rolesPermissions, roleInheritances, permStringMap, roleMap };
     }
 
     /**
@@ -69,15 +72,21 @@ export class PermissionsService {
         const UserPermissions = Database.repository('main', 'user-permissions') as any;
 
         // 1. Consultas EN VIVO (NO cacheadas)
-        const foundRolesData = await UserRoles.getAllActive({}, { userId: userId });
+        const foundRolesData = await UserRoles.getAll({}, { userId: userId });
         const foundRoles = Array.isArray(foundRolesData) ? foundRolesData : (foundRolesData?.rows || []);
-        const rolesData = foundRoles.map((rol: any) => ({ id: rol._Roles?.id || rol.role, code: rol._Roles?.code || 'UNKNOWN' }));
-
-        const userGranular = await UserPermissions.getAllActive({}, { userId: userId });
-        const granularList = (Array.isArray(userGranular) ? userGranular : userGranular?.rows || []) as Array<Record<string, any>>;
-
         // 2. Cargar datos de tablas cacheadas desde Redis
-        const { rolesPermissions, roleInheritances, permStringMap } = await PermissionsService.getRbacCachedCatalogs();
+        const { rolesPermissions, roleInheritances, permStringMap, roleMap } = await PermissionsService.getRbacCachedCatalogs();
+
+        const rolesData = foundRoles.map((rol: any) => {
+            const roleId = rol.role || rol._Roles?.id;
+            return {
+                id: roleId,
+                code: rol._Roles?.code || roleMap.get(roleId) || 'UNKNOWN'
+            };
+        });
+
+        const userGranular = await UserPermissions.getAll({}, { userId: userId });
+        const granularList = (Array.isArray(userGranular) ? userGranular : userGranular?.rows || []) as Array<Record<string, any>>;
 
         const includedPermissions = new Set<string>();
         const excludedPermissions = new Set<string>();

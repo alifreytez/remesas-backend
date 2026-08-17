@@ -35,7 +35,7 @@ class RolesService {
 
     async getRoleByRequestType(requestType: number | string): Promise<any> {
         return (
-            await this.TesRelacionTiposSolcajRepository.getAllActive(
+            await this.TesRelacionTiposSolcajRepository.getAll(
                 { attributes: ['id', 'rolEncargado', 'tipoSolicitud'] },
                 {
                     tipoSolicitud: requestType,
@@ -91,7 +91,7 @@ class RolesService {
 
     async getRequestTypesIdByRole({ session, role }: SessionRoleParams): Promise<any> {
         const roleId = this.getRoleId(session, role);
-        const result = await this.TesRelacionTiposSolcajRepository.getAllActive({ attributes: ['tipoSolicitud'] }, { rolEncargado: roleId });
+        const result = await this.TesRelacionTiposSolcajRepository.getAll({ attributes: ['tipoSolicitud'] }, { rolEncargado: roleId });
 
         return result?.rows?.map((req: any) => req.tipoSolicitud);
     }

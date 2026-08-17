@@ -1,4 +1,5 @@
-﻿import { execSync } from 'child_process';
+import { execSync } from 'child_process';
+import pg from 'pg';
 import 'dotenv/config';
 
 const args = process.argv.slice(2);
@@ -70,6 +71,30 @@ console.log(`Host / Puerto:  ${host} : ${port}`);
 console.log(`Usuario BD:     ${user}`);
 console.log(`Instruccion:    sequelize ${commandArgsStr}`);
 console.log('-----------------------------------------\n');
+
+if (cmdName === 'db:drop') {
+    const { Client } = pg;
+    const client = new Client({
+        user,
+        host,
+        database: 'postgres',
+        password: process.env.DB_POSTGRESQL_MAIN_PASSWORD,
+        port
+    });
+    try {
+        await client.connect();
+        await client.query(`
+            SELECT pg_terminate_backend(pg_stat_activity.pid)
+            FROM pg_stat_activity
+            WHERE pg_stat_activity.datname = '${db}'
+              AND pid <> pg_backend_pid();
+        `);
+        await client.end();
+        console.log('-> Conexiones previas a la base de datos terminadas correctamente.');
+    } catch (e) {
+        console.log('-> Advertencia: No se pudieron terminar las conexiones a la BD:', e.message);
+    }
+}
 
 try {
     execSync(`sequelize ${commandArgsStr}`, { stdio: 'inherit' });

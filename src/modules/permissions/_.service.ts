@@ -13,26 +13,51 @@ class PermissionsService extends BaseService {
     }
 
     async getPermissionTypes(filters: ProcessedQueryFilters) {
-        return await this.TiposPermiso.getAllActive({ ...filters, attributes: ['id', 'codigo', 'descripcion'] });
+        return await this.TiposPermiso.getAll({ ...filters, attributes: ['id', 'codigo', 'descripcion'] });
     }
 
     async getPermissionActions(filters: ProcessedQueryFilters) {
-        return await this.Acciones.getAllActive({ ...filters, attributes: ['id', 'codigo', 'descripcion'] });
+        return await this.Acciones.getAll({ ...filters, attributes: ['id', 'codigo', 'descripcion'] });
     }
 
     async getPermissionResources(filters: ProcessedQueryFilters) {
-        return await this.Recursos.getAllActive({ ...filters, attributes: ['id', 'codigo', 'descripcion'] });
+        return await this.Recursos.getAll({ ...filters, attributes: ['id', 'codigo', 'descripcion'] });
     }
 
     async getAllFullPermissions(filters: ProcessedQueryFilters) {
-        return await this.Permisos.getAllFull(filters);
+        const result = await this.Permisos.getAll(filters);
+        
+        const actionsRes = await SharedPermissionsService.getCachedRbacTable('actions', 'actions');
+        const resourcesRes = await SharedPermissionsService.getCachedRbacTable('resources', 'resources');
+        const typesRes = await SharedPermissionsService.getCachedRbacTable('permission_types', 'permission-types');
+
+        const actions = Array.isArray(actionsRes) ? actionsRes : [];
+        const resources = Array.isArray(resourcesRes) ? resourcesRes : [];
+        const permissionTypes = Array.isArray(typesRes) ? typesRes : [];
+
+        const accMap = new Map<string | number, any>(actions.map((a: any) => [a.id, a]));
+        const recMap = new Map<string | number, any>(resources.map((r: any) => [r.id, r]));
+        const tipMap = new Map<string | number, any>(permissionTypes.map((t: any) => [t.id, t]));
+
+        if (result && Array.isArray(result.rows)) {
+            result.rows = result.rows.map((p: any) => {
+                return {
+                    ...p,
+                    _Actions: accMap.get(p.action) || null,
+                    _Resources: recMap.get(p.resource) || null,
+                    _PermissionTypes: tipMap.get(p.permissionType || p.permission_type) || null
+                };
+            });
+        }
+        
+        return result;
     }
 
     async getFullPermission({ id }: { id?: string | number }) {
         if (!(Validator.isNotEmpty(id) && Validator.isObjectId(String(id)))) {
             throw new BadRequestError(`Invalid id: ${id}`);
         }
-        return await this.Permisos.getFull(id as string | number);
+        return await this.Permisos.getById(id as string | number);
     }
 
     async updatePermission({ id }: { id?: string | number }, { body }: { body: Record<string, any> }) {
@@ -98,27 +123,27 @@ class PermissionsService extends BaseService {
     }
 
     private get TiposPermiso() {
-        return Database.repository('main', 'auth-tipos-permiso') as any;
+        return Database.repository('main', 'permission-types') as any;
     }
 
     private get Acciones() {
-        return Database.repository('main', 'auth-acciones') as any;
+        return Database.repository('main', 'actions') as any;
     }
 
     private get Recursos() {
-        return Database.repository('main', 'auth-recursos') as any;
+        return Database.repository('main', 'resources') as any;
     }
 
     private get Permisos() {
-        return Database.repository('main', 'auth-permisos') as any;
+        return Database.repository('main', 'permissions') as any;
     }
 
     private get Roles() {
-        return Database.repository('main', 'auth-roles') as any;
+        return Database.repository('main', 'roles') as any;
     }
 
     private get RolesPermisos() {
-        return Database.repository('main', 'auth-roles-permisos') as any;
+        return Database.repository('main', 'role-permissions') as any;
     }
 }
 

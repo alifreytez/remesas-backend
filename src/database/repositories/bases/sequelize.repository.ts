@@ -398,10 +398,6 @@ export class SequelizeRepositoryBase<T = any, ID extends Identifier = string> ex
         });
     }
 
-    async getAllActive(options: SequelizeGetAllOptions = {} as any, filter?: WhereCondition): Promise<QueryResult<T>> {
-        return this.getAll(options, filter);
-    }
-
     async getAllIncludingDeleted(options: SequelizeGetAllOptions, filter?: WhereCondition): Promise<QueryResult<T>> {
         return this.getAll({ ...options, operation: { ...options.operation, paranoid: false } }, filter);
     }

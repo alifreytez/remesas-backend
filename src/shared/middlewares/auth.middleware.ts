@@ -112,6 +112,12 @@ export class AuthMiddleware {
             try {
                 if (!req.session) throw new SessionNotFoundError();
 
+                // BYPASS GLOBAL PARA SUPERADMIN
+                const isSuperAdmin = req.session.roles?.some((r: any) => r.code === 'SUPERADMIN');
+                if (isSuperAdmin) {
+                    return next();
+                }
+
                 const userPermissions = (req.session.permissions || []).map((p: any) => p.toUpperCase());
 
                 // Normalizar permisos requeridos

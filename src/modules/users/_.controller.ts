@@ -14,11 +14,11 @@ class UsersController extends ControllerBase {
 
     private formatUserPayload(payload: any) {
         if (!payload || typeof payload !== 'object') return { body: {} };
-        const { roles, rolesEliminar, body, ...rest } = payload;
+        const { roles, permissions, body, ...rest } = payload;
         return {
             body: body || rest || {},
             roles,
-            rolesEliminar,
+            permissions,
         };
     }
 

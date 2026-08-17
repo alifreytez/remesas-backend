@@ -55,7 +55,7 @@ export default class ContactsModel extends SequelizeModelBase {
             appRawName: 'contacts',
             tableName: 'contacts',
             displayField: 'name',
-            isBasicTable: true,
+            isBasicTable: false,
         };
     }
 

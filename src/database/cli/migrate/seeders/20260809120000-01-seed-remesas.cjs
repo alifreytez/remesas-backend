@@ -7,9 +7,8 @@ module.exports = {
     try {
       // 1. User Types
       await queryInterface.bulkInsert('user_types', [
-        { code: 'ADMIN', description: 'Administrador del Sistema' },
-        { code: 'OPERATOR', description: 'Operador de Sucursal' },
-        { code: 'CLIENT', description: 'Cliente Regular' }
+        { code: 'ADMIN', description: 'Administrativo' },
+        { code: 'CLIENT', description: 'Cliente' }
       ], { transaction });
 
       // 2. Remittance Statuses
@@ -77,30 +76,7 @@ module.exports = {
       );
       const getMethodId = (code) => methods.find(m => m.type_code === code)?.id;
 
-      // 7. Country Receiving Methods (Métodos disponibles por país)
-      const crm = [];
-      const addCRM = (cIso, mCode) => {
-          const cid = getCountryId(cIso);
-          const mid = getMethodId(mCode);
-          if (cid && mid) crm.push({ country: cid, receiving_method: mid, is_active: true });
-      }
-      
-      // Venezuela soporta todo menos Zelle local
-      addCRM('VE', 'TRANSFER');
-      addCRM('VE', 'PAGO_MOVIL');
-      addCRM('VE', 'CASH');
-      // USA soporta Zelle y Transferencias
-      addCRM('US', 'ZELLE');
-      addCRM('US', 'TRANSFER');
-      // Perú y Chile soportan Transferencias y Efectivo
-      addCRM('PE', 'TRANSFER');
-      addCRM('PE', 'CASH');
-      addCRM('CL', 'TRANSFER');
-      addCRM('CL', 'CASH');
 
-      if (crm.length > 0) {
-        await queryInterface.bulkInsert('country_receiving_methods', crm, { transaction });
-      }
 
       // 8. Bank Receiving Methods (Métodos por Banco)
       const brm = [];
@@ -138,7 +114,6 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
     try {
       await queryInterface.bulkDelete('bank_receiving_methods', null, { transaction });
-      await queryInterface.bulkDelete('country_receiving_methods', null, { transaction });
       await queryInterface.bulkDelete('receiving_methods', null, { transaction });
       await queryInterface.bulkDelete('banks', null, { transaction });
       await queryInterface.bulkDelete('countries', null, { transaction });

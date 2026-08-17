@@ -3,7 +3,7 @@ import { BaseService } from '@bases/service.base.js';
 import { Database } from '@database/index.js';
 import { ValidationError } from '@errors/validation.error.js';
 import { DatabaseError } from '@errors/database.error.js';
-import { AuthError, ForbiddenError } from '@errors/index.js';
+import { AuthError, ForbiddenError, NotFoundError } from '@errors/index.js';
 import { type ProcessedQueryFilters } from '@rules/api-query.type.js';
 import { type ModelWithAssociate } from '@database/models/bases/sequelize.model.js';
 import { type SequelizeRepositoryBase } from '@database/repositories/bases/sequelize.repository.js';
@@ -209,6 +209,7 @@ class BasicTablesService extends BaseService {
             .filter(([_, field]: [string, any]) => field.visible && (!field['private'] || session))
             .map(([key]) => key);
         if (!visibleAttrs.includes('id')) visibleAttrs.unshift('id');
+        if (schema['deletedAt'] && !visibleAttrs.includes('deletedAt')) visibleAttrs.push('deletedAt');
         return visibleAttrs;
     }
 
@@ -250,6 +251,12 @@ class BasicTablesService extends BaseService {
         }
 
         if (!session) throw new AuthError('No autorizado para acceder a este catálogo', { code: 'NO_SESSION_FOR_CATALOG' });
+
+        // BYPASS GLOBAL PARA SUPERADMIN
+        const isSuperAdmin = session.roles?.some((r: any) => r.code === 'SUPERADMIN');
+        if (isSuperAdmin) {
+            return;
+        }
 
         const perms = (session.permissions || []).map((p: string) => p.toUpperCase());
         const requiredPerm = `CRUD:${action}:${catalogName.toUpperCase()}`;

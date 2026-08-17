@@ -44,7 +44,7 @@ class UsersRolesService extends BaseService {
     }
 
     private get RolesUsuarios() {
-        return Database.repository('main', 'auth-roles-usuarios') as any;
+        return Database.repository('main', 'user-roles') as any;
     }
 }
 

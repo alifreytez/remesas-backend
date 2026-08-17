@@ -58,11 +58,26 @@ class TokenBlacklistService {
     }
 
     async isBlacklisted(token: string): Promise<boolean> {
-        // Este método solo se llama para Access Tokens (JWT) según auth.middleware.ts
-        const decoded = JWTUtil.decodeToken(token) as { jti?: string } | null;
-        if (!decoded || !decoded.jti) return true; // Si es inválido, lo tratamos como revocado
+        let isJwt = token.split('.').length === 3;
+        let jti = token; // Por defecto asumimos que es un token opaco (refresh token)
 
-        const key = `${this.keyPrefix}${decoded.jti}`;
+        if (isJwt) {
+            const decoded = JWTUtil.decodeToken(token) as { jti?: string } | null;
+            
+            // Si es un JWT mal formado o no tiene jti, lo tratamos como revocado por seguridad
+            if (!decoded || !decoded.jti) {
+                // Verificar si casualmente era un token opaco con dos puntos
+                if (token.split('.').length === 3) {
+                    jti = token; // Es un string opaco que parecía JWT
+                } else {
+                    return true;
+                }
+            } else {
+                jti = decoded.jti;
+            }
+        }
+
+        const key = `${this.keyPrefix}${jti}`;
         const isSelfBlacklisted = await this.client.get(key);
 
         return isSelfBlacklisted === 'blacklisted';

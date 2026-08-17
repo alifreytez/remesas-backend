@@ -45,7 +45,8 @@ class AuthService extends BaseService {
             deviceId: deviceId || null,
             username: foundUser.username,
             email: foundUser.email,
-            type: foundUser._UserType?.code || 'CLIENT', // Añadimos el tipo de usuario
+            type: foundUser._UserType?.code || 'CLIENT', // Mantenemos por retrocompatibilidad
+            userType: foundUser.userType, // Añadimos el ID del tipo de usuario para la UI
         };
 
         const accessToken = JWTUtil.generateAccessToken(payload as any);
@@ -114,7 +115,8 @@ class AuthService extends BaseService {
             id: foundUser.id,
             deviceId: deviceId || savedSession.deviceId || null,
             email: foundUser.email,
-            type: foundUser._UserType?.code || 'CLIENT', // Añadimos el tipo de usuario
+            type: foundUser._UserType?.code || 'CLIENT', // Mantenemos por retrocompatibilidad
+            userType: foundUser.userType, // Añadimos el ID del tipo de usuario para la UI
         };
 
         await tokenBlacklistService.blacklistTokenAtRefresh(oldJti);

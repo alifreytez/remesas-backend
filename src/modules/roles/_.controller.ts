@@ -8,7 +8,7 @@ class RolesController extends ControllerBase {
     }
 
     async getFullRole() {
-        const data = await service.getFullRole(this.getParams(), this.getQueryFilters());
+        const data = await service.getFullRole(this.getParams());
         return this.success(data);
     }
 

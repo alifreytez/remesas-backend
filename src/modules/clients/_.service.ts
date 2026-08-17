@@ -7,7 +7,7 @@ import { Transaction } from 'sequelize';
 
 class ClientsService extends BaseService {
     async list(filters: ProcessedQueryFilters) {
-        return await this.Clients.getAllActive({
+        return await this.Clients.getAll({
             ...filters,
             relations: [
                 { association: '_Person' },

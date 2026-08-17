@@ -1,6 +1,8 @@
 import { ControllerBase } from '@bases/controller.base.js';
 import clientsService from './_.service.js';
 
+import contactsService from '@modules/contacts/_.service.js';
+
 class ClientsController extends ControllerBase {
     async list() {
         const query = this.getQueryFilters();
@@ -31,6 +33,13 @@ class ClientsController extends ControllerBase {
         const { id } = this.getParams();
         await clientsService.remove(id);
         this.success(null, 'Cliente eliminado exitosamente');
+    }
+
+    async getContacts() {
+        const { id } = this.getParams();
+        const query = this.getQueryFilters();
+        const result = await contactsService.getContactsByClient(id, query);
+        this.success(result, 'Contactos obtenidos exitosamente');
     }
 }
 
