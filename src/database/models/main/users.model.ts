@@ -43,7 +43,7 @@ export default class UsersModel extends SequelizeModelBase {
                 allowNull: false,
                 type: DataTypes.STRING(150),
                 // unique: true, // Removido para permitir múltiples cuentas con el mismo correo
-                enhancedData: { uiLabel: 'Correo Electrónico', order: 4, inputType: 'email' as const },
+                enhancedData: { uiLabel: 'Correo Electrónicso', order: 4, inputType: 'email' as const },
             },
             passwordHash: {
                 allowNull: false,
