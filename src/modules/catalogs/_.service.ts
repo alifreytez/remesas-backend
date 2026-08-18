@@ -233,7 +233,21 @@ class BasicTablesService extends BaseService {
     }
 
     private handleError(error: any): never {
-        if (error.name === 'SequelizeForeignKeyConstraintError')
+        const isUniqueError = 
+            error.name === 'SequelizeUniqueConstraintError' || 
+            error.cause?.name === 'SequelizeUniqueConstraintError' || 
+            error.cause?.code === '23505' ||
+            (typeof error.cause === 'string' && error.cause.includes('duplicate key value violates unique constraint'));
+
+        if (isUniqueError)
+            throw new ValidationError('Ya existe un registro con estos mismos datos únicos.', { cause: error } as any);
+
+        const isFkError = 
+            error.name === 'SequelizeForeignKeyConstraintError' || 
+            error.cause?.name === 'SequelizeForeignKeyConstraintError' || 
+            error.cause?.code === '23503';
+
+        if (isFkError)
             throw new ValidationError('No puedes eliminar este registro porque está siendo utilizado en otras partes del sistema.', { cause: error } as any);
 
         if (error instanceof DatabaseError) throw new ValidationError(error.message, { cause: error } as any);
