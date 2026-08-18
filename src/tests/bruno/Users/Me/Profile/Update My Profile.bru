@@ -1,7 +1,7 @@
-﻿meta {
+meta {
   name: Update My Profile
   type: http
-  seq: 11
+  seq: 14
 }
 
 patch {
@@ -18,15 +18,6 @@ headers {
 auth:bearer {
   token: {{accessToken}}
 }
-
 body:json {
-  {
-    "sexo": 1,
-    "nombres": "Alirio",
-    "apellidos": "Changan",
-    "telefonoMovil": "04245112256",
-    "emailPersonal": "sixseven@REMESAS.edu.ve",
-    "fechaNacimiento": "2001-09-11"
-  }
+  {}
 }
-

@@ -1,7 +1,7 @@
 meta {
-  name: Refresh Token
+  name: Refresh
   type: http
-  seq: 3
+  seq: 2
 }
 
 post {
@@ -18,7 +18,6 @@ headers {
 auth:bearer {
   token: {{refreshToken}}
 }
-
 script:post-response {
   if (res.status === 200) {
     const data = res.getBody();

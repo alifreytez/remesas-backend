@@ -1,11 +1,11 @@
 meta {
-  name: Get My Contact By Id
+  name: Get All Clients
   type: http
-  seq: 19
+  seq: 57
 }
 
 get {
-  url: {{baseUrl}}/users/me/contacts/1
+  url: {{baseUrl}}/clients?page=1&limit=10
   body: none
   auth: bearer
 }

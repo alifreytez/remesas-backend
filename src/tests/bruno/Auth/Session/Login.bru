@@ -16,12 +16,8 @@ headers {
 }
 
 body:json {
-  {
-    "usuario": "28019240",
-    "clave": "dinformatica*2026**"
-  }
+  {}
 }
-
 script:post-response {
   if (res.status === 200) {
     const data = res.getBody();

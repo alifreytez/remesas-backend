@@ -1,11 +1,11 @@
 meta {
-  name: Delete Catalog Item
+  name: Delete
   type: http
-  seq: 7
+  seq: 56
 }
 
 delete {
-  url: {{baseUrl}}/catalogs/{{catalog}}/3
+  url: {{baseUrl}}/catalogs/some-catalog/1
   body: none
   auth: bearer
 }
@@ -17,8 +17,4 @@ headers {
 
 auth:bearer {
   token: {{accessToken}}
-}
-
-vars:pre-request {
-  catalog: currencies
 }

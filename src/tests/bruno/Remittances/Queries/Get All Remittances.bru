@@ -1,11 +1,11 @@
 meta {
-  name: Get My Contact By Id
+  name: Get All Remittances
   type: http
-  seq: 19
+  seq: 68
 }
 
 get {
-  url: {{baseUrl}}/users/me/contacts/1
+  url: {{baseUrl}}/remittances?page=1&limit=10
   body: none
   auth: bearer
 }

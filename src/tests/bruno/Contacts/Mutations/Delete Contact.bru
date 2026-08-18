@@ -1,11 +1,11 @@
 meta {
-  name: Get My Contact By Id
+  name: Delete Contact
   type: http
-  seq: 19
+  seq: 67
 }
 
-get {
-  url: {{baseUrl}}/users/me/contacts/1
+delete {
+  url: {{baseUrl}}/contacts/1
   body: none
   auth: bearer
 }

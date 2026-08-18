@@ -1,7 +1,7 @@
 meta {
   name: Verify Reset Code
   type: http
-  seq: 2
+  seq: 5
 }
 
 post {
@@ -11,22 +11,10 @@ post {
 }
 
 headers {
-  x-device-id: bruno-test-device
   x-client-channel: web
+  x-device-id: bruno-test-device
 }
 
 body:json {
-  {
-    "emailGestion": "pastoralirio6589@gmail.com",
-    "codigo": "01754912"
-  }
-}
-
-script:post-response {
-  if (res.status === 200) {
-    const data = res.getBody();
-    if (data.data && data.data.resetToken) {
-      bru.setEnvVar("resetToken", data.data.resetToken);
-    }
-  }
+  {}
 }

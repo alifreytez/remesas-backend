@@ -1,12 +1,12 @@
 meta {
-  name: Get My Contact By Id
+  name: Delete Permissions Massive
   type: http
-  seq: 19
+  seq: 48
 }
 
-get {
-  url: {{baseUrl}}/users/me/contacts/1
-  body: none
+delete {
+  url: {{baseUrl}}/permissions
+  body: json
   auth: bearer
 }
 
@@ -17,4 +17,7 @@ headers {
 
 auth:bearer {
   token: {{accessToken}}
+}
+body:json {
+  {}
 }

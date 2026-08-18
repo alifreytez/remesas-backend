@@ -1,11 +1,11 @@
 meta {
   name: Assign User Permissions
   type: http
-  seq: 13
+  seq: 24
 }
 
 post {
-  url: {{baseUrl}}/users/{{testUserId}}/permissions
+  url: {{baseUrl}}/users/1/permissions
   body: json
   auth: bearer
 }
@@ -18,19 +18,6 @@ headers {
 auth:bearer {
   token: {{accessToken}}
 }
-
 body:json {
-  {
-    "permisos": [{{testPermissionId}}]
-  }
-}
-
-vars:pre-request {
-  testUserId: 2
-  testPermissionId: 53
-}
-
-script:pre-request {
-  const baseUrl = bru.getEnvVar('baseUrl') || 'http://127.0.0.1:4000/api/v1';
-  bru.setVar('baseUrl', baseUrl);
+  {}
 }

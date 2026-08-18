@@ -1,11 +1,11 @@
 meta {
-  name: Create Catalog Item
+  name: Create
   type: http
-  seq: 5
+  seq: 53
 }
 
 post {
-  url: {{baseUrl}}/catalogs/{{catalog}}
+  url: {{baseUrl}}/catalogs/some-catalog
   body: json
   auth: bearer
 }
@@ -18,16 +18,6 @@ headers {
 auth:bearer {
   token: {{accessToken}}
 }
-
 body:json {
-  {
-    "code": "1234",
-    "description": "jeje",
-    "symbol": "%",
-    "isBaseCurrency": false
-  }
-}
-
-vars:pre-request {
-  catalog: currencies
+  {}
 }

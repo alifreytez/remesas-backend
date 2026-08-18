@@ -1,11 +1,11 @@
 meta {
   name: Get Permission By Id
   type: http
-  seq: 2
+  seq: 42
 }
 
 get {
-  url: {{baseUrl}}/permissions/{{testPermissionId}}
+  url: {{baseUrl}}/permissions/1
   body: none
   auth: bearer
 }
@@ -17,13 +17,4 @@ headers {
 
 auth:bearer {
   token: {{accessToken}}
-}
-
-vars:pre-request {
-  testPermissionId: 53
-}
-
-script:pre-request {
-  const baseUrl = bru.getEnvVar('baseUrl') || 'http://127.0.0.1:4000/api/v1';
-  bru.setVar('baseUrl', baseUrl);
 }

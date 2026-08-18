@@ -1,11 +1,11 @@
 meta {
-  name: Restore Catalog
+  name: Restore
   type: http
-  seq: 4
+  seq: 55
 }
 
 patch {
-  url: {{baseUrl}}/catalogs/tesoreria-tipos-solicitud-caja/1/restore
+  url: {{baseUrl}}/catalogs/some-catalog/1/restore
   body: none
   auth: bearer
 }
@@ -17,9 +17,4 @@ headers {
 
 auth:bearer {
   token: {{accessToken}}
-}
-
-script:pre-request {
-  const baseUrl = bru.getEnvVar('baseUrl') || 'http://127.0.0.1:4000/api/v1';
-  bru.setVar('baseUrl', baseUrl);
 }

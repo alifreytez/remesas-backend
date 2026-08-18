@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "name": "API (Backend TS)",
+  "name": "Remesas API",
   "type": "collection",
   "ignore": [
     "node_modules",

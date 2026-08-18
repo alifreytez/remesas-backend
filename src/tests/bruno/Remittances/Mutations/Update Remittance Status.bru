@@ -1,12 +1,12 @@
 meta {
-  name: Get My Contact By Id
+  name: Update Remittance Status
   type: http
-  seq: 19
+  seq: 71
 }
 
-get {
-  url: {{baseUrl}}/users/me/contacts/1
-  body: none
+patch {
+  url: {{baseUrl}}/remittances/1/status
+  body: json
   auth: bearer
 }
 
@@ -17,4 +17,7 @@ headers {
 
 auth:bearer {
   token: {{accessToken}}
+}
+body:json {
+  {}
 }

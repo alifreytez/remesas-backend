@@ -1,7 +1,7 @@
 meta {
   name: Logout
   type: http
-  seq: 2
+  seq: 3
 }
 
 post {
@@ -17,14 +17,4 @@ headers {
 
 auth:bearer {
   token: {{accessToken}}
-}
-
-script:post-response {
-  if (res.status === 200) {
-    const channel = (typeof req.getHeader === "function" ? req.getHeader("x-client-channel") : req.headers["x-client-channel"]) || "";
-    if (channel.toString().trim().toLowerCase() !== "web") {
-      bru.setEnvVar("accessToken", "");
-      bru.setEnvVar("refreshToken", "");
-    }
-  }
 }

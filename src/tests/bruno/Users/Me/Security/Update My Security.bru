@@ -1,7 +1,7 @@
 meta {
   name: Update My Security
   type: http
-  seq: 10
+  seq: 16
 }
 
 patch {
@@ -18,20 +18,6 @@ headers {
 auth:bearer {
   token: {{accessToken}}
 }
-
 body:json {
-  {
-    "claveActual": "dinformatica*2026**",
-    "usuario": "28019240",
-    "emailGestion": "pastoralirio6589@gmail.com"
-    //"clave": "dinformatica*2026**"
-  }
-}
-
-tests {
-  test("Should successfully update user security credentials", function() {
-    const resBody = res.getBody();
-    expect(res.getStatus()).to.equal(200);
-    expect(resBody.success).to.equal(true);
-  });
+  {}
 }

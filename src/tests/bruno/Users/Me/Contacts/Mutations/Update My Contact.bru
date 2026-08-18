@@ -1,11 +1,11 @@
-﻿meta {
+meta {
   name: Update My Contact
   type: http
-  seq: 1
+  seq: 21
 }
 
 patch {
-  url: {{baseUrl}}/users/me/contacts/:contactId
+  url: {{baseUrl}}/users/me/contacts/1
   body: json
   auth: bearer
 }
@@ -20,8 +20,4 @@ auth:bearer {
 }
 body:json {
   {}
-}
-script:pre-request {
-  const baseUrl = bru.getEnvVar('baseUrl') || 'http://127.0.0.1:4000/api/v1';
-  bru.setVar('baseUrl', baseUrl);
 }

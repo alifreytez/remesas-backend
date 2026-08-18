@@ -1,7 +1,7 @@
 meta {
   name: Get Permission Actions
   type: http
-  seq: 4
+  seq: 43
 }
 
 get {
@@ -17,9 +17,4 @@ headers {
 
 auth:bearer {
   token: {{accessToken}}
-}
-
-script:pre-request {
-  const baseUrl = bru.getEnvVar('baseUrl') || 'http://127.0.0.1:4000/api/v1';
-  bru.setVar('baseUrl', baseUrl);
 }
