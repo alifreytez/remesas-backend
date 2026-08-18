@@ -29,7 +29,7 @@ class RolesInheritancesService extends BaseService {
         }
 
         await PermissionsService.invalidateRbacCache(['auth.roles_herencias']);
-        return await RolesService.getFullRole({ id }, {} as any);
+        return await RolesService.getFullRole({ id });
     }
 
     async removeInheritances({ id }: { id?: string | number }, parentRoles: Array<string | number>) {
@@ -45,7 +45,7 @@ class RolesInheritancesService extends BaseService {
         }
 
         await PermissionsService.invalidateRbacCache(['auth.roles_herencias']);
-        return await RolesService.getFullRole({ id }, {} as any);
+        return await RolesService.getFullRole({ id });
     }
 
     async removeSingleInheritance({ id, parentRoleId }: { id?: string | number; parentRoleId?: string | number }) {
@@ -58,7 +58,7 @@ class RolesInheritancesService extends BaseService {
             throw new NotFoundError('El recurso no existe');
         }
         await PermissionsService.invalidateRbacCache(['auth.roles_herencias']);
-        return await RolesService.getFullRole({ id }, {} as any);
+        return await RolesService.getFullRole({ id });
     }
 
     private get RolesHerencias() {
