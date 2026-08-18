@@ -19,5 +19,16 @@ auth:bearer {
   token: {{accessToken}}
 }
 body:json {
-  {}
+  {
+    "firstName": "Juan",
+    "lastName": "Perez",
+    "documentNumber": "12345678",
+    "phone": "04121234567",
+    "username": "jperez",
+    "email": "jperez@correo.com",
+    "password": "Password123*",
+    "userType": 1,
+    "roles": [1],
+    "permissions": [1, 2]
+  }
 }

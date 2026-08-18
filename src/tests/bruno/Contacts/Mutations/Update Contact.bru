@@ -19,5 +19,11 @@ auth:bearer {
   token: {{accessToken}}
 }
 body:json {
-  {}
+  {
+    "client": 1,
+    "name": "Maria Gomez",
+    "document": "87654321",
+    "country": 1,
+    "contactData": { "bank": "Banesco", "account": "01340000" }
+  }
 }

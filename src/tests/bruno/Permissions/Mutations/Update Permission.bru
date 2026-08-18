@@ -19,5 +19,13 @@ auth:bearer {
   token: {{accessToken}}
 }
 body:json {
-  {}
+  {
+    "name": "Ver Usuarios",
+    "code": "API:VIEW:USERS",
+    "description": "Permite ver usuarios",
+    "is_active": true,
+    "resource": 1,
+    "action": 1,
+    "type": 1
+  }
 }

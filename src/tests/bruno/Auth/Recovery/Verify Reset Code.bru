@@ -16,5 +16,16 @@ headers {
 }
 
 body:json {
-  {}
+  {
+    "username": "admin",
+    "code": "123456"
+  }
+}
+script:post-response {
+  if (res.status === 200) {
+    const data = res.getBody();
+    if (data.data && data.data.resetToken) {
+      bru.setEnvVar("resetToken", data.data.resetToken);
+    }
+  }
 }

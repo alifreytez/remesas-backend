@@ -16,7 +16,10 @@ headers {
 }
 
 body:json {
-  {}
+  {
+    "username": "admin",
+    "password": "Password123*"
+  }
 }
 script:post-response {
   if (res.status === 200) {

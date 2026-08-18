@@ -19,5 +19,16 @@ auth:bearer {
   token: {{accessToken}}
 }
 body:json {
-  {}
+  {
+    "client": 1,
+    "originCountry": 1,
+    "destinationCountry": 2,
+    "amountSent": 100,
+    "amountReceived": 3550,
+    "exchangeRateApplied": 35.5,
+    "commissionApplied": 5,
+    "platformBankAccount": 1,
+    "recipientAccountDetails": { "bank": "Banesco" },
+    "paymentReceiptUrl": "https://..."
+  }
 }

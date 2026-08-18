@@ -19,5 +19,10 @@ auth:bearer {
   token: {{accessToken}}
 }
 body:json {
-  {}
+  {
+    "code": "SOME_CODE",
+    "description": "Some description",
+    "configuration": {},
+    "is_active": true
+  }
 }
