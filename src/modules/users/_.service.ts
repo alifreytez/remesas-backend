@@ -51,7 +51,7 @@ class UsersService extends BaseService {
         });
     }
 
-    private async validateUniqueUserFields({ id, username, email }: { id?: string | number; username?: string; email?: string }) {
+    private async validateUniqueUserFields({ id, username, email, documentNumber, userType }: { id?: string | number; username?: string; email?: string; documentNumber?: string; userType?: number }) {
         if (username !== undefined && username !== '') {
             const existingUsuario = (await this.AccesosSistema.getOne({ username })) as any;
             if (existingUsuario && String(existingUsuario.id) !== String(id || '')) {
@@ -62,6 +62,15 @@ class UsersService extends BaseService {
             const existingEmail = (await this.AccesosSistema.getOne({ email })) as any;
             if (existingEmail && String(existingEmail.id) !== String(id || '')) {
                 throw new BadRequestError('Ya existe un usuario activo registrado con ese correo');
+            }
+        }
+        if (documentNumber !== undefined && documentNumber !== '' && userType !== undefined) {
+            const person = await this.People.getOne({ documentNumber }) as any;
+            if (person) {
+                const existingUserForPerson = await this.AccesosSistema.getOne({ person: person.id, userType }) as any;
+                if (existingUserForPerson && String(existingUserForPerson.id) !== String(id || '')) {
+                    throw new BadRequestError('El documento de identidad proporcionado ya está asociado a otro usuario del mismo tipo');
+                }
             }
         }
     }
@@ -90,7 +99,7 @@ class UsersService extends BaseService {
             }
         }
 
-        await this.validateUniqueUserFields({ id: id as string | number, username, email });
+        await this.validateUniqueUserFields({ id: id as string | number, username, email, documentNumber, userType });
 
         return await this.AccesosSistema.transaction(async (transaction: Transaction) => {
             const currentUser = await this.AccesosSistema.getById(id as string | number);
@@ -182,7 +191,7 @@ class UsersService extends BaseService {
             }
         }
 
-        await this.validateUniqueUserFields({ username, email });
+        await this.validateUniqueUserFields({ username, email, documentNumber, userType });
 
         return await this.AccesosSistema.transaction(async (transaction: Transaction) => {
             // 1. Crear Persona
