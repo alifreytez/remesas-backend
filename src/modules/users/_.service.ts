@@ -152,7 +152,7 @@ class UsersService extends BaseService {
                 const rolesToAdd = roles.filter(r => !existingRoleIds.includes(String(r)));
 
                 if (rolesToDelete.length > 0) {
-                    await this.RolesUsuarios.delete(rolesToDelete, { transaction, force: true } as any);
+                    await this.RolesUsuarios.delete(rolesToDelete, { transaction } as any);
                 }
                 if (rolesToAdd.length > 0) {
                     const _roles = rolesToAdd.map(rol => ({ userId: id as string | number, role: rol }));
@@ -172,7 +172,7 @@ class UsersService extends BaseService {
                 const permsToAdd = permissions.filter(p => !existingPermIds.includes(String(p)));
 
                 if (permsToDelete.length > 0) {
-                    await this.UserPermissions.delete(permsToDelete, { transaction, force: true } as any);
+                    await this.UserPermissions.delete(permsToDelete, { transaction } as any);
                 }
                 if (permsToAdd.length > 0) {
                     const _perms = permsToAdd.map(perm => ({ userId: id as string | number, permission: perm, isGranted: true }));

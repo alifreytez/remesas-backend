@@ -16,7 +16,6 @@ export default class UserPermissionsModel extends SequelizeModelBase {
             name: 'UserPermissions',
             appRawName: 'user-permissions',
             tableName: 'user_permissions',
-            paranoid: false,
         };
     }
 
