@@ -152,7 +152,7 @@ class UsersService extends BaseService {
                 const rolesToAdd = roles.filter(r => !existingRoleIds.includes(String(r)));
 
                 if (rolesToDelete.length > 0) {
-                    await this.RolesUsuarios.delete(rolesToDelete, { transaction });
+                    await this.RolesUsuarios.delete(rolesToDelete, { transaction, force: true } as any);
                 }
                 if (rolesToAdd.length > 0) {
                     const _roles = rolesToAdd.map(rol => ({ userId: id as string | number, role: rol }));
@@ -172,7 +172,7 @@ class UsersService extends BaseService {
                 const permsToAdd = permissions.filter(p => !existingPermIds.includes(String(p)));
 
                 if (permsToDelete.length > 0) {
-                    await this.UserPermissions.delete(permsToDelete, { transaction });
+                    await this.UserPermissions.delete(permsToDelete, { transaction, force: true } as any);
                 }
                 if (permsToAdd.length > 0) {
                     const _perms = permsToAdd.map(perm => ({ userId: id as string | number, permission: perm, isGranted: true }));
@@ -255,10 +255,6 @@ class UsersService extends BaseService {
     async deleteUser({ id }: { id?: string | number }) {
         if (!(Validator.isNotEmpty(id) && Validator.isObjectId(String(id)))) {
             throw new BadRequestError(`Invalid id: ${id}`);
-        }
-
-        if (roles !== undefined && roles.length > 1) {
-            throw new BadRequestError('El usuario puede tener asignado un mximo de 1 rol.');
         }
 
         return await this.AccesosSistema.transaction(async (transaction: Transaction) => {
