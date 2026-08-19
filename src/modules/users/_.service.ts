@@ -103,6 +103,10 @@ class UsersService extends BaseService {
             }
         }
 
+        if (roles !== undefined && roles.length > 1) {
+            throw new BadRequestError('El usuario puede tener asignado un máximo de 1 rol.');
+        }
+
         await this.validateUniqueUserFields({ id: id as string | number, username, email, documentNumber, userType });
 
         return await this.AccesosSistema.transaction(async (transaction: Transaction) => {
@@ -195,6 +199,10 @@ class UsersService extends BaseService {
             }
         }
 
+        if (roles && roles.length > 1) {
+            throw new BadRequestError('El usuario puede tener asignado un máximo de 1 rol.');
+        }
+
         await this.validateUniqueUserFields({ username, email, documentNumber, userType });
 
         return await this.AccesosSistema.transaction(async (transaction: Transaction) => {
@@ -247,6 +255,10 @@ class UsersService extends BaseService {
     async deleteUser({ id }: { id?: string | number }) {
         if (!(Validator.isNotEmpty(id) && Validator.isObjectId(String(id)))) {
             throw new BadRequestError(`Invalid id: ${id}`);
+        }
+
+        if (roles !== undefined && roles.length > 1) {
+            throw new BadRequestError('El usuario puede tener asignado un mximo de 1 rol.');
         }
 
         return await this.AccesosSistema.transaction(async (transaction: Transaction) => {
