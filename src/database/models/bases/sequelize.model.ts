@@ -167,9 +167,19 @@ export abstract class SequelizeModelBase extends BaseModel {
                 case 'belongsTo':
                     source.belongsTo(target, relation.options);
                     break;
-                case 'belongsToMany':
+                case 'belongsToMany': {
+                    if (relation.options?.through && typeof relation.options.through === 'string') {
+                        const throughTableName = relation.options.through;
+                        for (const modelInstance of models.values()) {
+                            if (modelInstance.tableName === throughTableName) {
+                                relation.options.through = modelInstance;
+                                break;
+                            }
+                        }
+                    }
                     source.belongsToMany(target, relation.options);
                     break;
+                }
                 default:
                     throw new Error(`Unknown relation type: ${relation.type}`);
             }
