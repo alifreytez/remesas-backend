@@ -14,11 +14,11 @@ class RolesController extends ControllerBase {
 
     private formatRolePayload(payload: any) {
         if (!payload || typeof payload !== 'object') return { body: {} };
-        const { permisos, permisosEliminar, body, ...rest } = payload;
+        const { permissions, permissionsToRemove, body, ...rest } = payload;
         return {
             body: body || rest || {},
-            permisos,
-            permisosEliminar,
+            permissions,
+            permissionsToRemove,
         };
     }
 

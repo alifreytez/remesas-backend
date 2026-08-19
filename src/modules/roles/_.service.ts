@@ -13,25 +13,50 @@ class RolesService extends BaseService {
     }
 
     async getAllFullRoles(filters: ProcessedQueryFilters) {
-        return await this.Roles.getAll(filters);
+        const result = (await this.Roles.getAll(filters)) as { rows: any[]; count: number };
+        const inheritances = (await this.RolesHerencias.getAll({ pagination: { offset: 0, limit: 1000 } } as any)) as { rows: any[] };
+        const allRolesResult = (await this.Roles.getAll({ pagination: { offset: 0, limit: 1000 } } as any)) as { rows: any[] };
+        
+        const roleMap = new Map(allRolesResult.rows.map(r => [r.id, r]));
+
+        const enrichedRows = result.rows.map(r => {
+            const data = r.toJSON ? r.toJSON() : r;
+            const parentIds = inheritances.rows.filter(i => i.childRole === r.id).map(i => i.parentRole);
+            data.parentRoles = parentIds.map(pid => roleMap.get(pid)).filter(Boolean);
+            return data;
+        });
+
+        return { ...result, rows: enrichedRows };
     }
 
     async getFullRole({ id }: { id?: string | number }) {
         if (!(Validator.isNotEmpty(id) && Validator.isObjectId(String(id)))) throw new BadRequestError(`Invalid id: ${id}`);
 
-        return await this.Roles.getById(id as string | number);
+        const role = (await this.Roles.getById(id as string | number)) as any;
+        if (!role) return null;
+
+        const parentRoles = (await this.RolesHerencias.getAll({ pagination: { offset: 0, limit: 1000 }, order: [['id', 'asc']], qc: {} } as any, { childRole: id })) as { rows: any[] };
+        const permissions = (await this.RolesPermisos.getAll({ pagination: { offset: 0, limit: 1000 }, order: [['id', 'asc']], qc: {} } as any, { role: id })) as { rows: any[] };
+
+        const roleData = role.toJSON ? role.toJSON() : role;
+        
+        return {
+            ...roleData,
+            _ParentRoles: parentRoles.rows,
+            _Permissions: permissions.rows
+        };
     }
 
     async updateRole(
         { id }: { id?: string | number },
         {
             body,
-            permisos,
-            permisosEliminar,
+            permissions,
+            permissionsToRemove,
         }: {
             body: Record<string, any>;
-            permisos?: Array<string | number>;
-            permisosEliminar?: Array<string | number>;
+            permissions?: Array<string | number>;
+            permissionsToRemove?: Array<string | number>;
         }
     ) {
         if (!(Validator.isNotEmpty(id) && Validator.isObjectId(String(id)))) {
@@ -43,10 +68,12 @@ class RolesService extends BaseService {
 
             if (body && Object.keys(body).length > 0) updated = await this.Roles.update({ id }, body, { transaction });
 
-            if (permisosEliminar && permisosEliminar.length > 0) await this.RolesPermisos.delete(permisosEliminar, { transaction });
+                        if (permissionsToRemove && permissionsToRemove.length > 0) {
+                await this.RolesPermisos.delete({ role: id, permission: permissionsToRemove }, { transaction });
+            }
 
-            if (permisos && permisos.length > 0) {
-                const newPerms = permisos.map((per) => ({ rol: id, permiso: per }));
+            if (permissions && permissions.length > 0) {
+                const newPerms = permissions.map((per) => ({ role: id, permission: per }));
                 await this.RolesPermisos.bulkCreate(newPerms, { transaction });
             }
 
@@ -56,12 +83,12 @@ class RolesService extends BaseService {
         return result;
     }
 
-    async createRole({ body, permisos }: { body: Record<string, any>; permisos?: Array<string | number> }) {
+    async createRole({ body, permissions }: { body: Record<string, any>; permissions?: Array<string | number> }) {
         const result = await this.Roles.transaction(async (transaction: Transaction) => {
             const created = await this.Roles.create((this as any).upperCase(body), { transaction });
 
-            if (permisos && permisos.length > 0) {
-                const newPerms = permisos.map((per) => ({ rol: created.id, permiso: per }));
+            if (permissions && permissions.length > 0) {
+                const newPerms = permissions.map((per) => ({ role: created.id, permission: per }));
                 await this.RolesPermisos.bulkCreate(newPerms, { transaction });
             }
 
@@ -77,7 +104,7 @@ class RolesService extends BaseService {
         }
 
         const result = await this.Roles.transaction(async (transaction: Transaction) => {
-            const permissions = (await this.RolesPermisos.getAll({ attributes: ['id'], pagination: { offset: 0 }, order: [['id', 'asc']], qc: {} } as any, { rol: id })) as {
+            const permissions = (await this.RolesPermisos.getAll({ attributes: ['id'], pagination: { offset: 0 }, order: [['id', 'asc']], qc: {} } as any, { role: id })) as {
                 rows: Array<Record<string, any>>;
                 count: number;
             };
@@ -85,24 +112,12 @@ class RolesService extends BaseService {
                 rows: Array<Record<string, any>>;
                 count: number;
             };
-            const specs = (await this.RolesEspecificaciones.getAll({ attributes: ['id'], pagination: { offset: 0 }, order: [['id', 'asc']], qc: {} } as any, { rol: id })) as {
-                rows: Array<Record<string, any>>;
-                count: number;
-            };
-            const requestRelation = (await this.RelacionTiposSolcaj.getAll({ attributes: ['id'], pagination: { offset: 0 }, order: [['id', 'asc']], qc: {} } as any, { rolEncargado: id })) as {
-                rows: Array<Record<string, any>>;
-                count: number;
-            };
 
             const relPermsId = permissions.rows.map((per) => per.id);
             const relUsersId = users.rows.map((usr) => usr.id);
-            const relSpecsId = specs.rows.map((spc) => spc.id);
-            const relRequestRelationId = requestRelation.rows.map((reqRel) => reqRel.id);
 
             if (relPermsId.length > 0) await this.RolesPermisos.delete(relPermsId, { transaction });
             if (relUsersId.length > 0) await this.RolesUsuarios.delete(relUsersId, { transaction });
-            if (relSpecsId.length > 0) await this.RolesEspecificaciones.delete(relSpecsId, { transaction });
-            if (relRequestRelationId.length > 0) await this.RelacionTiposSolcaj.delete(relRequestRelationId, { transaction });
 
             await this.RolesHerencias.delete({ childRole: id }, { transaction });
             await this.RolesHerencias.delete({ parentRole: id }, { transaction });
@@ -129,17 +144,15 @@ class RolesService extends BaseService {
         return Database.repository('main', 'user-roles') as any;
     }
 
-    private get RolesEspecificaciones() {
-        return Database.repository('main', 'auth-roles-especificaciones') as any;
-    }
-
-    private get RelacionTiposSolcaj() {
-        return Database.repository('main', 'tes-relacion-tipos-solcaj') as any;
-    }
-
     private get RolesHerencias() {
         return Database.repository('main', 'role-inheritances') as any;
     }
 }
 
 export default new RolesService();
+
+
+
+
+
+

@@ -47,7 +47,7 @@ class RolesPermissionsService extends BaseService {
     }
 
     private get RolesPermisos() {
-        return Database.repository('main', 'auth-roles-permisos') as any;
+        return Database.repository('main', 'role-permissions') as any;
     }
 }
 

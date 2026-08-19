@@ -12,7 +12,7 @@ class UsersPermissionsService extends BaseService {
         if (!(Validator.isNotEmpty(id) && Validator.isObjectId(String(id)))) {
             throw new BadRequestError(`Invalid id: ${id}`);
         }
-        const PermisosUsuarios = Database.repository('main', 'auth-permisos-usuarios') as any;
+        const PermisosUsuarios = Database.repository('main', 'user-permissions') as any;
         return await PermisosUsuarios.getFullByUser(id as string | number);
     }
 
@@ -24,13 +24,13 @@ class UsersPermissionsService extends BaseService {
             throw new BadRequestError('Debe proporcionar un arreglo de IDs de permisos en el body');
         }
 
-        const PermisosUsuarios = Database.repository('main', 'auth-permisos-usuarios') as any;
+        const PermisosUsuarios = Database.repository('main', 'user-permissions') as any;
         for (const permId of permissions) {
-            const existing = await PermisosUsuarios.getOne({ usuario: id, permiso: permId });
+            const existing = await PermisosUsuarios.getOne({ userId: id, permission: permId });
             if (existing) {
                 await PermisosUsuarios.update({ id: existing.id }, { isGranted: true });
             } else {
-                await PermisosUsuarios.create({ usuario: id, permiso: permId, isGranted: true });
+                await PermisosUsuarios.create({ userId: id, permission: permId, isGranted: true });
             }
         }
         return await this.getUserPermissions({ id });
@@ -44,13 +44,13 @@ class UsersPermissionsService extends BaseService {
             throw new BadRequestError('Debe proporcionar un arreglo de IDs de permisos en el body');
         }
 
-        const PermisosUsuarios = Database.repository('main', 'auth-permisos-usuarios') as any;
+        const PermisosUsuarios = Database.repository('main', 'user-permissions') as any;
         for (const permId of permissions) {
-            const existing = await PermisosUsuarios.getOne({ usuario: id, permiso: permId });
+            const existing = await PermisosUsuarios.getOne({ userId: id, permission: permId });
             if (existing) {
                 await PermisosUsuarios.update({ id: existing.id }, { isGranted: false });
             } else {
-                await PermisosUsuarios.create({ usuario: id, permiso: permId, isGranted: false });
+                await PermisosUsuarios.create({ userId: id, permission: permId, isGranted: false });
             }
         }
         return await this.getUserPermissions({ id });
@@ -64,9 +64,9 @@ class UsersPermissionsService extends BaseService {
             throw new BadRequestError('Debe proporcionar un arreglo de IDs de permisos en el body');
         }
 
-        const PermisosUsuarios = Database.repository('main', 'auth-permisos-usuarios') as any;
+        const PermisosUsuarios = Database.repository('main', 'user-permissions') as any;
         for (const permId of permissions) {
-            await PermisosUsuarios.delete({ usuario: id, permiso: permId });
+            await PermisosUsuarios.delete({ userId: id, permission: permId });
         }
         return await this.getUserPermissions({ id });
     }
@@ -75,8 +75,8 @@ class UsersPermissionsService extends BaseService {
         if (!(Validator.isNotEmpty(id) && Validator.isObjectId(String(id))) || !(Validator.isNotEmpty(permissionId) && Validator.isObjectId(String(permissionId)))) {
             throw new BadRequestError(`Invalid IDs provided: user=${id}, permission=${permissionId}`);
         }
-        const PermisosUsuarios = Database.repository('main', 'auth-permisos-usuarios') as any;
-        const affectedRows = await PermisosUsuarios.delete({ usuario: id, permiso: permissionId });
+        const PermisosUsuarios = Database.repository('main', 'user-permissions') as any;
+        const affectedRows = await PermisosUsuarios.delete({ userId: id, permission: permissionId });
         if (!affectedRows) {
             throw new NotFoundError('El recurso no existe');
         }

@@ -62,7 +62,7 @@ class RolesInheritancesService extends BaseService {
     }
 
     private get RolesHerencias() {
-        return Database.repository('main', 'auth-roles-herencias') as any;
+        return Database.repository('main', 'role-inheritances') as any;
     }
 }
 
