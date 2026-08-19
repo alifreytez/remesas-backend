@@ -23,7 +23,9 @@ class UsersService extends BaseService {
             ...filters,
             relations: [
                 { association: '_UserType' },
-                { association: '_Person' }
+                { association: '_Person' },
+                { association: '_Roles' },
+                { association: '_Permissions' }
             ]
         };
 
@@ -46,7 +48,9 @@ class UsersService extends BaseService {
         return await this.AccesosSistema.getById(id as string | number, {
             relations: [
                 { association: '_UserType' },
-                { association: '_Person' }
+                { association: '_Person' },
+                { association: '_Roles' },
+                { association: '_Permissions' }
             ]
         });
     }

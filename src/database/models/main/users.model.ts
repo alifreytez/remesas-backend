@@ -72,6 +72,16 @@ export default class UsersModel extends SequelizeModelBase {
                 type: 'belongsTo',
                 target: 'People',
                 options: { foreignKey: 'person', as: '_Person' },
+            },
+            {
+                type: 'belongsToMany',
+                target: 'Roles',
+                options: { through: 'user_roles', foreignKey: 'userId', otherKey: 'role', as: '_Roles' }
+            },
+            {
+                type: 'belongsToMany',
+                target: 'Permissions',
+                options: { through: 'user_permissions', foreignKey: 'userId', otherKey: 'permission', as: '_Permissions' }
             }
         ];
     }
