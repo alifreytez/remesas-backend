@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize';
+﻿import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -22,25 +22,25 @@ async function run() {
         console.log('Conectado a BD');
 
         await sequelize.query(`
-            UPDATE receiving_methods 
+            UPDATE payment_methods 
             SET fields_config = '` + JSON.stringify([{label: 'Nro. Cuenta', name: 'account-number'}, {label: 'Documento de Identidad', name: 'document-id'}]) + `'
             WHERE type_code = 'TRANSFER';
         `);
 
         await sequelize.query(`
-            UPDATE receiving_methods 
+            UPDATE payment_methods 
             SET fields_config = '` + JSON.stringify([{label: 'Teléfono', name: 'phone-number'}, {label: 'Documento de Identidad', name: 'document-id'}]) + `'
             WHERE type_code = 'PAGO_MOVIL';
         `);
 
         await sequelize.query(`
-            UPDATE receiving_methods 
+            UPDATE payment_methods 
             SET fields_config = '` + JSON.stringify([{label: 'Correo Electrónico', name: 'email'}]) + `'
             WHERE type_code = 'ZELLE';
         `);
 
         await sequelize.query(`
-            UPDATE receiving_methods 
+            UPDATE payment_methods 
             SET fields_config = '` + JSON.stringify([{label: 'Oficina de Retiro', name: 'office-id'}]) + `'
             WHERE type_code = 'CASH';
         `);
@@ -55,3 +55,4 @@ async function run() {
 }
 
 run();
+
