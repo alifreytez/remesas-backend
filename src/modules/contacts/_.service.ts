@@ -23,7 +23,10 @@ class ContactsService extends BaseService {
             }
         };
 
-        return await this.Contacts.getAllFull(mergedFilters as any);
+        return await this.Contacts.getAll({
+            ...mergedFilters,
+            relations: [{ association: '_Client' }, { association: '_Country' }]
+        } as any);
     }
 
     async getContactByIdAndClient(contactId: string | number, clientId: string | number) {
@@ -31,7 +34,9 @@ class ContactsService extends BaseService {
             throw new BadRequestError('ID de contacto inválido');
         }
         
-        const contact = await this.Contacts.getFull(contactId as string | number);
+        const contact = await this.Contacts.getById(contactId as string | number, {
+            relations: [{ association: '_Client' }, { association: '_Country' }]
+        });
         
         // Si no existe o no pertenece al cliente, retornamos NotFound por seguridad (IDOR preventivo)
         if (!contact || String(contact.client) !== String(clientId)) {

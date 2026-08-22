@@ -113,6 +113,10 @@ class UsersService extends BaseService {
             const currentUser = await this.AccesosSistema.getById(id as string | number);
             if (!currentUser) throw new BadRequestError('Usuario no encontrado');
 
+            if (username && currentUser.username && username !== currentUser.username) {
+                throw new BadRequestError('El nombre de usuario no puede ser modificado una vez creado.');
+            }
+
             // 1. Actualizar o crear persona
             let personId = currentUser.person;
             if (firstName || lastName || documentNumber || phone) {
@@ -135,14 +139,14 @@ class UsersService extends BaseService {
             let updated = null;
             if (Object.keys(userData).length > 0) {
                 if (password) {
-                    await this.SesionesUsuario.delete({ userId: id as string | number }, { transaction });
+                    await this.SesionesUsuario.delete({ user: id as string | number }, { transaction });
                 }
                 updated = await this.AccesosSistema.update({ id }, userData, { transaction });
             }
 
             // 3. Manejo de Roles
             if (roles !== undefined) {
-                const existingRolesRaw = await this.RolesUsuarios.getAll({ pagination: { offset: 0 }, order: [['id', 'asc']], qc: {} } as any, { userId: id });
+                const existingRolesRaw = await this.RolesUsuarios.getAll({ pagination: { offset: 0 }, order: [['id', 'asc']], qc: {} } as any, { user: id });
                 const existingRoles = Array.isArray(existingRolesRaw) ? existingRolesRaw : existingRolesRaw.rows;
                 
                 const existingRoleIds = existingRoles.map((er: any) => String(er.role));
@@ -155,14 +159,14 @@ class UsersService extends BaseService {
                     await this.RolesUsuarios.delete(rolesToDelete, { transaction } as any);
                 }
                 if (rolesToAdd.length > 0) {
-                    const _roles = rolesToAdd.map(rol => ({ userId: id as string | number, role: rol }));
+                    const _roles = rolesToAdd.map(rol => ({ user: id as string | number, role: rol }));
                     await this.RolesUsuarios.bulkCreate(_roles, { transaction });
                 }
             }
 
             // 4. Manejo de Permisos
             if (permissions !== undefined) {
-                const existingPermsRaw = await this.UserPermissions.getAll({ pagination: { offset: 0 }, order: [['id', 'asc']], qc: {} } as any, { userId: id });
+                const existingPermsRaw = await this.UserPermissions.getAll({ pagination: { offset: 0 }, order: [['id', 'asc']], qc: {} } as any, { user: id });
                 const existingPerms = Array.isArray(existingPermsRaw) ? existingPermsRaw : existingPermsRaw.rows;
 
                 const existingPermIds = existingPerms.map((ep: any) => String(ep.permission));
@@ -175,7 +179,7 @@ class UsersService extends BaseService {
                     await this.UserPermissions.delete(permsToDelete, { transaction } as any);
                 }
                 if (permsToAdd.length > 0) {
-                    const _perms = permsToAdd.map(perm => ({ userId: id as string | number, permission: perm, isGranted: true }));
+                    const _perms = permsToAdd.map(perm => ({ user: id as string | number, permission: perm, isGranted: true }));
                     await this.UserPermissions.bulkCreate(_perms, { transaction });
                 }
             }
@@ -201,6 +205,13 @@ class UsersService extends BaseService {
 
         if (roles && roles.length > 1) {
             throw new BadRequestError('El usuario puede tener asignado un máximo de 1 rol.');
+        }
+
+        if (documentNumber) {
+            const expectedUsername = 'R' + documentNumber.replace(/\D/g, '');
+            if (username !== expectedUsername) {
+                username = expectedUsername; // Auto-correct to strictly enforce it
+            }
         }
 
         await this.validateUniqueUserFields({ username, email, documentNumber, userType });
@@ -234,13 +245,13 @@ class UsersService extends BaseService {
 
             // 3. Asignar Roles
             if (roles && roles.length > 0) {
-                const _roles = roles.map((rol) => ({ userId: created.id, role: rol }));
+                const _roles = roles.map((rol) => ({ user: created.id, role: rol }));
                 await this.RolesUsuarios.bulkCreate(_roles, { transaction });
             }
 
             // 4. Asignar Permisos Granulares
             if (permissions && permissions.length > 0) {
-                const _perms = permissions.map((perm) => ({ userId: created.id, permission: perm, isGranted: true }));
+                const _perms = permissions.map((perm) => ({ user: created.id, permission: perm, isGranted: true }));
                 await this.UserPermissions.bulkCreate(_perms, { transaction });
             }
 
@@ -258,7 +269,7 @@ class UsersService extends BaseService {
         }
 
         return await this.AccesosSistema.transaction(async (transaction: Transaction) => {
-            const roles = (await this.RolesUsuarios.getAll({ attributes: ['id'], pagination: { offset: 0 }, order: [['id', 'asc']], qc: {} } as any, { userId: id })) as {
+            const roles = (await this.RolesUsuarios.getAll({ attributes: ['id'], pagination: { offset: 0 }, order: [['id', 'asc']], qc: {} } as any, { user: id })) as {
                 rows: Array<Record<string, any>>;
                 count: number;
             };

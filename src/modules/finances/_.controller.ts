@@ -15,18 +15,6 @@ class FinancesController extends ControllerBase {
         this.created(result, 'Tasa de cambio registrada exitosamente');
     }
 
-    async listCommissions() {
-        const query = this.getQueryFilters();
-        const result = await financesService.listCommissions(query);
-        this.success(result, 'Consulta exitosa');
-    }
-
-    async createCommission() {
-        const body = this.getBody();
-        const user = this.getSession() as Record<string, any>;
-        const result = await financesService.createCommission(body, user?.id);
-        this.created(result, 'Comisión registrada exitosamente');
-    }
 }
 
 export default new FinancesController();

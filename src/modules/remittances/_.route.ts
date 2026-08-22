@@ -7,6 +7,8 @@ const router = Router();
 router.use(verifySession);
 
 router.get('/', remittancesController.list);
+router.get('/options', remittancesController.getOptions);
+router.post('/quote', remittancesController.getQuote);
 router.get('/:id', remittancesController.getById);
 router.post('/', remittancesController.create);
 router.patch('/:id', remittancesController.updateStatus);

@@ -72,7 +72,7 @@ export class PermissionsService {
         const UserPermissions = Database.repository('main', 'user-permissions') as any;
 
         // 1. Consultas EN VIVO (NO cacheadas)
-        const foundRolesData = await UserRoles.getAll({}, { userId: userId });
+        const foundRolesData = await UserRoles.getAll({}, { user: userId });
         const foundRoles = Array.isArray(foundRolesData) ? foundRolesData : (foundRolesData?.rows || []);
         // 2. Cargar datos de tablas cacheadas desde Redis
         const { rolesPermissions, roleInheritances, permStringMap, roleMap } = await PermissionsService.getRbacCachedCatalogs();
@@ -85,7 +85,7 @@ export class PermissionsService {
             };
         });
 
-        const userGranular = await UserPermissions.getAll({}, { userId: userId });
+        const userGranular = await UserPermissions.getAll({}, { user: userId });
         const granularList = (Array.isArray(userGranular) ? userGranular : userGranular?.rows || []) as Array<Record<string, any>>;
 
         const includedPermissions = new Set<string>();

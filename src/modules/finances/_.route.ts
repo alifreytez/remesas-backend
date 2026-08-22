@@ -9,7 +9,4 @@ router.use(verifySession);
 router.get('/rates', financesController.listRates);
 router.post('/rates', financesController.createRate);
 
-router.get('/commissions', financesController.listCommissions);
-router.post('/commissions', financesController.createCommission);
-
 export default router;

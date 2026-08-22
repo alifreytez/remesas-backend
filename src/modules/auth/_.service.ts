@@ -63,7 +63,7 @@ class AuthService extends BaseService {
             await this.UserSessions.delete({ deviceId: deviceId });
         }
         await this.UserSessions.create({
-            userId: foundUser.id,
+            user: foundUser.id,
             device: device ?? 'Unknown Device',
             deviceId: deviceId ?? null,
             jti: robustJti,
@@ -101,7 +101,7 @@ class AuthService extends BaseService {
             throw new AuthError('La sesión ha expirado. Por favor, inicia sesión nuevamente.', { code: 'EXPIRED_SESSION' });
         }
 
-        const userId = savedSession.userId;
+        const userId = savedSession.user;
         const foundUser = (await this.Users.getOne(
             { id: userId },
             { relations: [{ association: '_UserType' }] }
@@ -136,7 +136,7 @@ class AuthService extends BaseService {
         }
 
         await this.UserSessions.create({
-            userId: foundUser.id,
+            user: foundUser.id,
             device: device || savedSession.device || 'Unknown Device',
             deviceId: targetDeviceId || null,
             jti: newJti,
@@ -256,7 +256,7 @@ class AuthService extends BaseService {
         const hashed = await BcryptUtil.hash(password);
         await this.Users.update({ id: user.id }, { passwordHash: hashed });
 
-        await this.UserSessions.delete({ userId: user.id });
+        await this.UserSessions.delete({ user: user.id });
         await redisClient.del(keyToken);
 
         const recipientName = undefined;

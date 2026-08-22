@@ -26,11 +26,11 @@ class UsersPermissionsService extends BaseService {
 
         const PermisosUsuarios = Database.repository('main', 'user-permissions') as any;
         for (const permId of permissions) {
-            const existing = await PermisosUsuarios.getOne({ userId: id, permission: permId });
+            const existing = await PermisosUsuarios.getOne({ user: id, permission: permId });
             if (existing) {
                 await PermisosUsuarios.update({ id: existing.id }, { isGranted: true });
             } else {
-                await PermisosUsuarios.create({ userId: id, permission: permId, isGranted: true });
+                await PermisosUsuarios.create({ user: id, permission: permId, isGranted: true });
             }
         }
         return await this.getUserPermissions({ id });
@@ -46,11 +46,11 @@ class UsersPermissionsService extends BaseService {
 
         const PermisosUsuarios = Database.repository('main', 'user-permissions') as any;
         for (const permId of permissions) {
-            const existing = await PermisosUsuarios.getOne({ userId: id, permission: permId });
+            const existing = await PermisosUsuarios.getOne({ user: id, permission: permId });
             if (existing) {
                 await PermisosUsuarios.update({ id: existing.id }, { isGranted: false });
             } else {
-                await PermisosUsuarios.create({ userId: id, permission: permId, isGranted: false });
+                await PermisosUsuarios.create({ user: id, permission: permId, isGranted: false });
             }
         }
         return await this.getUserPermissions({ id });
@@ -66,7 +66,7 @@ class UsersPermissionsService extends BaseService {
 
         const PermisosUsuarios = Database.repository('main', 'user-permissions') as any;
         for (const permId of permissions) {
-            await PermisosUsuarios.delete({ userId: id, permission: permId });
+            await PermisosUsuarios.delete({ user: id, permission: permId });
         }
         return await this.getUserPermissions({ id });
     }
@@ -76,7 +76,7 @@ class UsersPermissionsService extends BaseService {
             throw new BadRequestError(`Invalid IDs provided: user=${id}, permission=${permissionId}`);
         }
         const PermisosUsuarios = Database.repository('main', 'user-permissions') as any;
-        const affectedRows = await PermisosUsuarios.delete({ userId: id, permission: permissionId });
+        const affectedRows = await PermisosUsuarios.delete({ user: id, permission: permissionId });
         if (!affectedRows) {
             throw new NotFoundError('El recurso no existe');
         }
