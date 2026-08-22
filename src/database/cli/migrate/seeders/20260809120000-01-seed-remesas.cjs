@@ -64,10 +64,10 @@ module.exports = {
 
       // 6. Payment Methods
       await queryInterface.bulkInsert('payment_methods', [
-        { name: 'Transferencia Bancaria', type_code: 'TRANSFER', is_global: false, forced_currency: null, fields_config: JSON.stringify([ {label: 'Nro. Cuenta', name: 'account-number'}, {label: 'Documento de Identidad', name: 'document-id'} ]) },
-        { name: 'Pago Móvil', type_code: 'PAGO_MOVIL', is_global: false, forced_currency: null, fields_config: JSON.stringify([ {label: 'Teléfono', name: 'phone-number'}, {label: 'Documento de Identidad', name: 'document-id'} ]) },
-        { name: 'Zelle', type_code: 'ZELLE', is_global: true, forced_currency: getCurrencyId('USD'), fields_config: JSON.stringify([ {label: 'Correo Electrónico', name: 'email'} ]) },
-        { name: 'Efectivo', type_code: 'CASH', is_global: false, forced_currency: null, fields_config: JSON.stringify([ {label: 'Oficina de Retiro', name: 'office-id'} ]) }
+        { name: 'Transferencia Bancaria', type_code: 'TRANSFER', is_global: false, forced_currency: null, fields_config: JSON.stringify([ {label: 'Nro. Cuenta', name: 'account-number', type: 'text', format: 'number', required: true}, {label: 'Documento de Identidad', name: 'document-id', type: 'text', format: 'document', required: true} ]) },
+        { name: 'Pago Móvil', type_code: 'PAGO_MOVIL', is_global: false, forced_currency: null, fields_config: JSON.stringify([ {label: 'Teléfono', name: 'phone-number', type: 'tel', format: 'phone', placeholder: 'Ej. 04141234567', required: true}, {label: 'Documento de Identidad', name: 'document-id', type: 'text', format: 'document', placeholder: 'Ej. V-12345678', required: true} ]) },
+        { name: 'Zelle', type_code: 'ZELLE', is_global: true, forced_currency: getCurrencyId('USD'), fields_config: JSON.stringify([ {label: 'Correo Electrónico', name: 'email', type: 'email', format: 'email', placeholder: 'Ej. juan@correo.com', required: true} ]) },
+        { name: 'Efectivo', type_code: 'CASH', is_global: false, forced_currency: null, fields_config: JSON.stringify([ {label: 'Oficina de Retiro', name: 'office-id', type: 'text', format: 'default', placeholder: 'Ej. Oficina Caracas', required: true} ]) },
       ], { transaction });
 
       const [methods] = await queryInterface.sequelize.query(
