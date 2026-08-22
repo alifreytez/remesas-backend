@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { type RelationsReturn, SequelizeModelBase } from '@database/models/bases/sequelize.model.js';
 
-export default class RemittanceMovementsModel extends SequelizeModelBase {
+export default class RemittancePriceModifiersModel extends SequelizeModelBase {
     static definition() {
         return {
             id: {
@@ -21,40 +21,37 @@ export default class RemittanceMovementsModel extends SequelizeModelBase {
                     relatedCatalog: 'remittances'
                 },
             },
-
-            status: {
-                allowNull: false,
+            priceModifier: {
+                allowNull: true, // Nullable in case the modifier catalog is hard deleted, though soft deletes prevent this
                 type: DataTypes.INTEGER,
                 enhancedData: { 
-                    uiLabel: 'Estado', 
+                    uiLabel: 'Modificador', 
                     order: 3,
                     inputType: 'select' as const,
-                    relatedCatalog: 'remittance-statuses'
+                    relatedCatalog: 'price-modifiers'
                 },
             },
-            changedBy: {
+            appliedAmount: {
                 allowNull: false,
-                type: DataTypes.INTEGER,
-                enhancedData: { 
-                    uiLabel: 'Ejecutado Por', 
-                    order: 4,
-                    inputType: 'select' as const,
-                    relatedCatalog: 'users'
-                },
+                type: DataTypes.DECIMAL(15, 4),
+                enhancedData: { uiLabel: 'Monto Aplicado', order: 4 },
             },
-            observation: {
-                allowNull: true,
-                type: DataTypes.TEXT,
-                enhancedData: { uiLabel: 'Observaciones / Motivo', order: 5, inputType: 'textarea' as const },
+            snapshot: {
+                allowNull: false,
+                type: DataTypes.JSONB,
+                enhancedData: { uiLabel: 'Snapshot de Reglas', order: 5 },
             },
         };
     }
 
     static config() {
         return {
-            name: 'Movimientos de Remesas',
-            appRawName: 'remittance-movements',
-            tableName: 'remittance_movements',
+            name: 'Modificadores por Remesa',
+            appRawName: 'remittance-price-modifiers',
+            tableName: 'remittance_price_modifiers',
+            displayField: 'id',
+            isBasicTable: false,
+            publicAccess: false,
         };
     }
 
@@ -67,14 +64,8 @@ export default class RemittanceMovementsModel extends SequelizeModelBase {
             },
             {
                 type: 'belongsTo',
-                target: 'RemittanceStatuses',
-                options: { foreignKey: 'status', as: '_Status' },
-            },
-
-            {
-                type: 'belongsTo',
-                target: 'Users',
-                options: { foreignKey: 'changedBy', as: '_User' },
+                target: 'PriceModifiers',
+                options: { foreignKey: 'priceModifier', as: '_PriceModifier' },
             }
         ];
     }

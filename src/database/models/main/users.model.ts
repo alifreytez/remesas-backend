@@ -1,4 +1,4 @@
-import { DataTypes } from 'sequelize';
+﻿import { DataTypes } from 'sequelize';
 import { type RelationsReturn, SequelizeModelBase } from '@database/models/bases/sequelize.model.js';
 
 export default class UsersModel extends SequelizeModelBase {
@@ -39,6 +39,16 @@ export default class UsersModel extends SequelizeModelBase {
                     relatedCatalog: 'people'
                 },
             },
+            country: {
+                allowNull: false,
+                type: DataTypes.INTEGER,
+                enhancedData: { 
+                    uiLabel: 'País Base', 
+                    order: 3.5,
+                    inputType: 'select' as const,
+                    relatedCatalog: 'countries'
+                },
+            },
             email: {
                 allowNull: false,
                 type: DataTypes.STRING(150),
@@ -74,15 +84,24 @@ export default class UsersModel extends SequelizeModelBase {
                 options: { foreignKey: 'person', as: '_Person' },
             },
             {
+                type: 'belongsTo',
+                target: 'Countries',
+                options: { foreignKey: 'country', as: '_Country' },
+            },
+            {
                 type: 'belongsToMany',
                 target: 'Roles',
-                options: { through: 'user_roles', foreignKey: 'userId', otherKey: 'role', as: '_Roles' }
+                options: { through: 'user_roles', foreignKey: 'user', otherKey: 'role', as: '_Roles' }
             },
             {
                 type: 'belongsToMany',
                 target: 'Permissions',
-                options: { through: 'user_permissions', foreignKey: 'userId', otherKey: 'permission', as: '_Permissions' }
+                options: { through: 'user_permissions', foreignKey: 'user', otherKey: 'permission', as: '_Permissions' }
             }
         ];
     }
 }
+
+
+
+

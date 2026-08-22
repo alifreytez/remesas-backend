@@ -7,42 +7,14 @@ module.exports = {
     try {
       await queryInterface.createTable('contacts', {
         id: { allowNull: false, autoIncrement: true, primaryKey: true, type: Sequelize.INTEGER },
-        client: { type: Sequelize.INTEGER, allowNull: false },
+        client: { type: Sequelize.INTEGER, allowNull: false , references: { model: 'clients', key: 'id' }, onDelete: 'NO ACTION', onUpdate: 'NO ACTION' },
         name: { type: Sequelize.STRING(255), allowNull: false },
-        document: { type: Sequelize.STRING(100), allowNull: false },
-        country: { type: Sequelize.INTEGER, allowNull: false },
+        country: { type: Sequelize.INTEGER, allowNull: false , references: { model: 'countries', key: 'id' }, onDelete: 'NO ACTION', onUpdate: 'NO ACTION' },
         contact_data: { type: Sequelize.JSONB, allowNull: false },
         created_at: { allowNull: false, type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
         updated_at: { allowNull: false, type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
         deleted_at: { type: Sequelize.DATE }
       }, { transaction });
-      
-      await queryInterface.addConstraint(
-        { tableName: 'contacts' },
-        {
-          fields: ['client'],
-          type: 'foreign key',
-          name: 'fk_contacts_client',
-          references: { table: { tableName: 'clients' }, field: 'id' },
-          onDelete: 'NO ACTION',
-          onUpdate: 'NO ACTION',
-          transaction,
-        }
-      );      
-      
-      await queryInterface.addConstraint(
-        { tableName: 'contacts' },
-        {
-          fields: ['country'],
-          type: 'foreign key',
-          name: 'fk_contacts_country',
-          references: { table: { tableName: 'countries' }, field: 'id' },
-          onDelete: 'NO ACTION',
-          onUpdate: 'NO ACTION',
-          transaction,
-        }
-      );
-
       await transaction.commit();
     } catch (err) {
       await transaction.rollback();

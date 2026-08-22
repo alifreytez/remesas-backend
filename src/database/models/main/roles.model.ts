@@ -16,6 +16,7 @@ export default class RolesModel extends SequelizeModelBase {
             name: 'Roles',
             appRawName: 'roles',
             tableName: 'roles',
+            displayField: 'description',
             paranoid: true,
         };
     }

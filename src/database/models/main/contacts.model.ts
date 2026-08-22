@@ -26,17 +26,12 @@ export default class ContactsModel extends SequelizeModelBase {
                 type: DataTypes.STRING(255),
                 enhancedData: { uiLabel: 'Nombre del Contacto', order: 3 },
             },
-            document: {
-                allowNull: false,
-                type: DataTypes.STRING(100),
-                enhancedData: { uiLabel: 'Documento de Identidad', order: 4 },
-            },
             country: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
                 enhancedData: { 
                     uiLabel: 'País de Residencia', 
-                    order: 5,
+                    order: 4,
                     inputType: 'select' as const,
                     relatedCatalog: 'countries'
                 },
@@ -44,7 +39,7 @@ export default class ContactsModel extends SequelizeModelBase {
             contactData: {
                 allowNull: false,
                 type: DataTypes.JSONB,
-                enhancedData: { uiLabel: 'Cuentas Bancarias', order: 6 },
+                enhancedData: { uiLabel: 'Cuentas Bancarias', order: 5 },
             },
         };
     }

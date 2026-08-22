@@ -5,34 +5,34 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      await queryInterface.createTable('platform_bank_accounts', {
+      await queryInterface.createTable('bank_payment_methods', {
         id: { allowNull: false, autoIncrement: true, primaryKey: true, type: Sequelize.INTEGER },
-        bank: { type: Sequelize.INTEGER, allowNull: false },
-        account_details: { allowNull: false, type: Sequelize.JSONB },
-        currency: {
-          type: Sequelize.INTEGER,
-          allowNull: false,
-          references: { model: 'currencies', key: 'id' },
-          onUpdate: 'CASCADE',
-          onDelete: 'RESTRICT'
+        bank: { 
+          type: Sequelize.INTEGER, 
+          allowNull: false, 
+          references: { model: 'banks', key: 'id' }, 
+          onUpdate: 'CASCADE', 
+          onDelete: 'CASCADE' 
         },
-        is_active: { allowNull: false, type: Sequelize.BOOLEAN, defaultValue: true },
+        payment_method: { 
+          type: Sequelize.INTEGER, 
+          allowNull: false, 
+          references: { model: 'payment_methods', key: 'id' }, 
+          onUpdate: 'CASCADE', 
+          onDelete: 'CASCADE' 
+        },
         created_at: { allowNull: false, type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
         updated_at: { allowNull: false, type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
         deleted_at: { type: Sequelize.DATE }
       }, { transaction });
-      await queryInterface.addConstraint(
-        { tableName: 'platform_bank_accounts' },
-        {
-          fields: ['bank'],
-          type: 'foreign key',
-          name: 'fk_platform_bank_accounts_bank',
-          references: { table: { tableName: 'banks' }, field: 'id' },
-          onDelete: 'NO ACTION',
-          onUpdate: 'NO ACTION',
-          transaction,
-        }
-      );
+
+      await queryInterface.addIndex({ tableName: 'bank_payment_methods' }, ['bank', 'payment_method'], {
+        unique: true,
+        where: { deleted_at: null },
+        name: 'unique_bank_payment_method',
+        transaction
+      });
+
       await transaction.commit();
     } catch (err) {
       await transaction.rollback();
@@ -43,7 +43,7 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      await queryInterface.dropTable('platform_bank_accounts', { transaction });
+      await queryInterface.dropTable('bank_payment_methods', { transaction });
       await transaction.commit();
     } catch (err) {
       await transaction.rollback();
@@ -51,3 +51,5 @@ module.exports = {
     }
   }
 };
+
+

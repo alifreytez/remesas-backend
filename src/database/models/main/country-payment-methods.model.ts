@@ -1,7 +1,7 @@
-import { DataTypes } from 'sequelize';
+﻿import { DataTypes } from 'sequelize';
 import { type RelationsReturn, SequelizeModelBase } from '@database/models/bases/sequelize.model.js';
 
-export default class BankReceivingMethodsModel extends SequelizeModelBase {
+export default class CountryPaymentMethodsModel extends SequelizeModelBase {
     static definition() {
         return {
             id: {
@@ -11,42 +11,36 @@ export default class BankReceivingMethodsModel extends SequelizeModelBase {
                 autoIncrement: true,
                 enhancedData: { visible: false, order: 1 },
             },
-            bank: {
+            country: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
-                unique: 'unique_bank_method',
+                unique: 'unique_country_payment_method',
                 enhancedData: { 
-                    uiLabel: 'Banco', 
+                    uiLabel: 'País', 
                     order: 2,
                     inputType: 'select' as const,
-                    relatedCatalog: 'banks'
+                    relatedCatalog: 'countries'
                 },
             },
-            receivingMethod: {
+            paymentMethod: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
-                unique: 'unique_bank_method',
+                unique: 'unique_country_payment_method',
                 enhancedData: { 
-                    uiLabel: 'Método de Recepción', 
+                    uiLabel: 'Método de Pago', 
                     order: 3,
                     inputType: 'select' as const,
-                    relatedCatalog: 'receiving-methods'
+                    relatedCatalog: 'payment-methods'
                 },
-            },
-            isActive: {
-                allowNull: false,
-                type: DataTypes.BOOLEAN,
-                defaultValue: true,
-                enhancedData: { uiLabel: 'Activo', order: 4 },
             }
         };
     }
 
     static config() {
         return {
-            name: 'Métodos por Banco',
-            appRawName: 'bank-receiving-methods',
-            tableName: 'bank_receiving_methods',
+            name: 'Métodos de Pago por País',
+            appRawName: 'country-payment-methods',
+            tableName: 'country_payment_methods',
             displayField: 'id',
             isBasicTable: true,
             publicAccess: true,
@@ -57,14 +51,15 @@ export default class BankReceivingMethodsModel extends SequelizeModelBase {
         return [
             {
                 type: 'belongsTo',
-                target: 'Banks',
-                options: { foreignKey: 'bank', as: '_Bank' },
+                target: 'Countries',
+                options: { foreignKey: 'country', as: '_Country' },
             },
             {
                 type: 'belongsTo',
-                target: 'ReceivingMethods',
-                options: { foreignKey: 'receivingMethod', as: '_ReceivingMethod' },
+                target: 'PaymentMethods',
+                options: { foreignKey: 'paymentMethod', as: '_PaymentMethod' },
             }
         ];
     }
 }
+

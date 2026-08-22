@@ -12,8 +12,7 @@ module.exports = {
       },
       iso_code: {
         type: Sequelize.STRING(3),
-        allowNull: false,
-        unique: true
+        allowNull: false
       },
       name: {
         type: Sequelize.STRING(100),
@@ -38,8 +37,15 @@ module.exports = {
         allowNull: true
       }
     });
+    await queryInterface.addIndex({ tableName: 'currencies' }, ['iso_code'], {
+      unique: true,
+      where: { deleted_at: null },
+      name: 'uq_currencies_iso_code'
+    });
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('currencies');
   }
 };
+
+

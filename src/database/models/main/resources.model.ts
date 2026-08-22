@@ -15,6 +15,7 @@ export default class ResourcesModel extends SequelizeModelBase {
             name: 'Resources',
             appRawName: 'resources',
             tableName: 'resources',
+            displayField: 'description',
             paranoid: true,
         };
     }

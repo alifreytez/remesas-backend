@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { type RelationsReturn, SequelizeModelBase } from '@database/models/bases/sequelize.model.js';
 
-export default class UserCountriesModel extends SequelizeModelBase {
+export default class BankPaymentMethodsModel extends SequelizeModelBase {
     static definition() {
         return {
             id: {
@@ -11,34 +11,39 @@ export default class UserCountriesModel extends SequelizeModelBase {
                 autoIncrement: true,
                 enhancedData: { visible: false, order: 1 },
             },
-            userId: {
+            bank: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
+                unique: 'unique_bank_method',
                 enhancedData: { 
-                    uiLabel: 'Usuario', 
+                    uiLabel: 'Banco', 
                     order: 2,
                     inputType: 'select' as const,
-                    relatedCatalog: 'users'
+                    relatedCatalog: 'banks'
                 },
             },
-            countryId: {
+            paymentMethod: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
+                unique: 'unique_bank_method',
                 enhancedData: { 
-                    uiLabel: 'País Asignado', 
+                    uiLabel: 'Método de Pago', 
                     order: 3,
                     inputType: 'select' as const,
-                    relatedCatalog: 'countries'
+                    relatedCatalog: 'payment-methods'
                 },
-            },
+            }
         };
     }
 
     static config() {
         return {
-            name: 'Países de Usuario',
-            appRawName: 'user-countries',
-            tableName: 'user_countries',
+            name: 'Métodos por Banco',
+            appRawName: 'bank-payment-methods',
+            tableName: 'bank_payment_methods',
+            displayField: 'id',
+            isBasicTable: true,
+            publicAccess: true,
         };
     }
 
@@ -46,13 +51,13 @@ export default class UserCountriesModel extends SequelizeModelBase {
         return [
             {
                 type: 'belongsTo',
-                target: 'Users',
-                options: { foreignKey: 'userId', as: '_User' },
+                target: 'Banks',
+                options: { foreignKey: 'bank', as: '_Bank' },
             },
             {
                 type: 'belongsTo',
-                target: 'Countries',
-                options: { foreignKey: 'countryId', as: '_Country' },
+                target: 'PaymentMethods',
+                options: { foreignKey: 'paymentMethod', as: '_PaymentMethod' },
             }
         ];
     }

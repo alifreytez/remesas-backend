@@ -7,7 +7,7 @@ module.exports = {
     try {
       await queryInterface.createTable('user_sessions', {
         id: { allowNull: false, autoIncrement: true, primaryKey: true, type: Sequelize.INTEGER },
-        user_id: { type: Sequelize.INTEGER, allowNull: false },
+        user: { type: Sequelize.INTEGER, allowNull: false, references: { model: 'users', key: 'id' }, onDelete: 'NO ACTION', onUpdate: 'NO ACTION' },
         device: { type: Sequelize.STRING(255) },
         device_id: { type: Sequelize.STRING(255) },
         jti: { type: Sequelize.STRING(255), allowNull: false },
@@ -22,18 +22,7 @@ module.exports = {
         name: 'uq_user_sessions_jti',
         transaction
       });
-      await queryInterface.addConstraint(
-        { tableName: 'user_sessions' },
-        {
-          fields: ['user_id'],
-          type: 'foreign key',
-          name: 'fk_user_sessions_user_id',
-          references: { table: { tableName: 'users' }, field: 'id' },
-          onDelete: 'NO ACTION',
-          onUpdate: 'NO ACTION',
-          transaction,
-        }
-      );
+      
       await transaction.commit();
     } catch (err) {
       await transaction.rollback();
@@ -52,3 +41,5 @@ module.exports = {
     }
   }
 };
+
+

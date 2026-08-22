@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { type RelationsReturn, SequelizeModelBase } from '@database/models/bases/sequelize.model.js';
 
-export default class ReceivingMethodsModel extends SequelizeModelBase {
+export default class ModifierTypesModel extends SequelizeModelBase {
     static definition() {
         return {
             id: {
@@ -15,31 +15,16 @@ export default class ReceivingMethodsModel extends SequelizeModelBase {
                 allowNull: false,
                 type: DataTypes.STRING(100),
                 unique: true,
-                enhancedData: { uiLabel: 'Nombre del Método', order: 2 },
+                enhancedData: { uiLabel: 'Nombre del Tipo', order: 2 },
             },
-            typeCode: {
-                allowNull: false,
-                type: DataTypes.STRING(50),
-                unique: true,
-                enhancedData: { uiLabel: 'Código Único', order: 3 },
-            },
-            fieldsConfig: {
-                allowNull: true,
-                type: DataTypes.JSONB,
-                enhancedData: { 
-                    uiLabel: 'Configuración de Campos', 
-                    order: 4,
-                    inputType: 'json-table' as const
-                },
-            }
         };
     }
 
     static config() {
         return {
-            name: 'Métodos de Recepción',
-            appRawName: 'receiving-methods',
-            tableName: 'receiving_methods',
+            name: 'Tipos de Modificadores',
+            appRawName: 'modifier-types',
+            tableName: 'modifier_types',
             displayField: 'name',
             isBasicTable: true,
             publicAccess: true,

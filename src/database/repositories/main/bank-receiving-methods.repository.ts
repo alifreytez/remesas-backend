@@ -1,10 +1,11 @@
-import BankReceivingMethodsModel from '@database/models/main/bank-receiving-methods.model.js';
+﻿import BankPaymentMethodsModel from '@database/models/main/bank-payment-methods.model.js';
 import { SequelizeRepositoryBase } from '@repositories/bases/sequelize.repository.js';
 
-class BankReceivingMethodsRepository extends SequelizeRepositoryBase {
+class BankPaymentMethodsRepository extends SequelizeRepositoryBase {
     constructor() {
-        super(BankReceivingMethodsModel);
+        super(BankPaymentMethodsModel);
     }
 }
 
-export default new BankReceivingMethodsRepository();
+export default new BankPaymentMethodsRepository();
+

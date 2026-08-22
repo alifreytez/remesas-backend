@@ -59,36 +59,38 @@ export default class RemittancesModel extends SequelizeModelBase {
                     order: 7,
                 },
             },
-            commissionApplied: {
-                allowNull: false,
-                type: DataTypes.INTEGER,
-                enhancedData: { 
-                    uiLabel: 'Comisión Aplicada', 
-                    order: 8,
-                },
-            },
             platformBankAccount: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
                 enhancedData: { 
                     uiLabel: 'Cuenta Plataforma', 
-                    order: 9,
+                    order: 8,
                 },
             },
             recipientAccountDetails: {
                 allowNull: false,
                 type: DataTypes.JSONB,
-                enhancedData: { uiLabel: 'Detalles Cuenta Destino', order: 10 },
+                enhancedData: { uiLabel: 'Detalles Cuenta Destino', order: 9 },
             },
             paymentReceiptUrl: {
                 allowNull: true,
                 type: DataTypes.STRING(255),
-                enhancedData: { uiLabel: 'Recibo Pago Cliente', order: 11 },
+                enhancedData: { uiLabel: 'Recibo Pago Cliente', order: 10 },
             },
             emissionReceiptUrl: {
                 allowNull: true,
                 type: DataTypes.STRING(255),
-                enhancedData: { uiLabel: 'Recibo Emisión Remesa', order: 12 },
+                enhancedData: { uiLabel: 'Recibo Emisión Remesa', order: 11 },
+            },
+            status: {
+                allowNull: true,
+                type: DataTypes.INTEGER,
+                enhancedData: { 
+                    uiLabel: 'Estado', 
+                    order: 12,
+                    inputType: 'select' as const,
+                    relatedCatalog: 'remittance-statuses'
+                },
             },
 
         };
@@ -126,13 +128,13 @@ export default class RemittancesModel extends SequelizeModelBase {
             },
             {
                 type: 'belongsTo',
-                target: 'Commissions',
-                options: { foreignKey: 'commissionApplied', as: '_Commission' },
+                target: 'PlatformBankAccounts',
+                options: { foreignKey: 'platformBankAccount', as: '_PlatformBankAccount' },
             },
             {
                 type: 'belongsTo',
-                target: 'PlatformBankAccounts',
-                options: { foreignKey: 'platformBankAccount', as: '_PlatformBankAccount' },
+                target: 'RemittanceStatuses',
+                options: { foreignKey: 'status', as: '_Status' },
             },
 
         ];

@@ -54,8 +54,7 @@ module.exports = {
         { name: 'Mercantil', code: '0105' },
         { name: 'BCP', code: '002' },
         { name: 'Interbank', code: '003' },
-        { name: 'Banco de Chile', code: '001' },
-        { name: 'Zelle', code: 'ZEL' } // Tratamos a Zelle como una entidad bancaria virtual
+        { name: 'Banco de Chile', code: '001' }
       ], { transaction });
 
       const [banks] = await queryInterface.sequelize.query(
@@ -63,27 +62,61 @@ module.exports = {
       );
       const getBankId = (name) => banks.find(b => b.name === name)?.id;
 
-      // 6. Receiving Methods
-      await queryInterface.bulkInsert('receiving_methods', [
-        { name: 'Transferencia Bancaria', type_code: 'TRANSFER', fields_config: JSON.stringify([ {label: 'Nro. Cuenta', name: 'account-number'}, {label: 'Documento de Identidad', name: 'document-id'} ]) },
-        { name: 'Pago Móvil', type_code: 'PAGO_MOVIL', fields_config: JSON.stringify([ {label: 'Teléfono', name: 'phone-number'}, {label: 'Documento de Identidad', name: 'document-id'} ]) },
-        { name: 'Zelle', type_code: 'ZELLE', fields_config: JSON.stringify([ {label: 'Correo Electrónico', name: 'email'} ]) },
-        { name: 'Efectivo', type_code: 'CASH', fields_config: JSON.stringify([ {label: 'Oficina de Retiro', name: 'office-id'} ]) }
+      // 6. Payment Methods
+      await queryInterface.bulkInsert('payment_methods', [
+        { name: 'Transferencia Bancaria', type_code: 'TRANSFER', is_global: false, forced_currency: null, fields_config: JSON.stringify([ {label: 'Nro. Cuenta', name: 'account-number'}, {label: 'Documento de Identidad', name: 'document-id'} ]) },
+        { name: 'Pago Móvil', type_code: 'PAGO_MOVIL', is_global: false, forced_currency: null, fields_config: JSON.stringify([ {label: 'Teléfono', name: 'phone-number'}, {label: 'Documento de Identidad', name: 'document-id'} ]) },
+        { name: 'Zelle', type_code: 'ZELLE', is_global: true, forced_currency: getCurrencyId('USD'), fields_config: JSON.stringify([ {label: 'Correo Electrónico', name: 'email'} ]) },
+        { name: 'Efectivo', type_code: 'CASH', is_global: false, forced_currency: null, fields_config: JSON.stringify([ {label: 'Oficina de Retiro', name: 'office-id'} ]) }
       ], { transaction });
 
       const [methods] = await queryInterface.sequelize.query(
-        'SELECT id, type_code FROM receiving_methods;', { transaction }
+        'SELECT id, type_code FROM payment_methods;', { transaction }
       );
       const getMethodId = (code) => methods.find(m => m.type_code === code)?.id;
 
+      // 7. Country Banks & Country Payment Methods
+      const cb = [];
+      const addCB = (iso, bName) => {
+          const cid = getCountryId(iso);
+          const bid = getBankId(bName);
+          if (cid && bid) cb.push({ country: cid, bank: bid });
+      }
 
+      // Asociar bancos a países
+      addCB('VE', 'Banesco');
+      addCB('VE', 'Mercantil');
+      addCB('PE', 'BCP');
+      addCB('PE', 'Interbank');
+      addCB('CL', 'Banco de Chile');
 
-      // 8. Bank Receiving Methods (Métodos por Banco)
+      if (cb.length > 0) {
+        await queryInterface.bulkInsert('country_banks', cb, { transaction });
+      }
+
+      const cpm = [];
+      const addCPM = (iso, mCode) => {
+          const cid = getCountryId(iso);
+          const mid = getMethodId(mCode);
+          if (cid && mid) cpm.push({ country: cid, payment_method: mid });
+      }
+
+      // Asociar métodos locales a países (los globales no necesitan estar aquí)
+      addCPM('VE', 'TRANSFER');
+      addCPM('VE', 'PAGO_MOVIL');
+      addCPM('PE', 'TRANSFER');
+      addCPM('CL', 'TRANSFER');
+      
+      if (cpm.length > 0) {
+        await queryInterface.bulkInsert('country_payment_methods', cpm, { transaction });
+      }
+
+      // 8. Bank Payment Methods (Métodos por Banco)
       const brm = [];
       const addBRM = (bName, mCode) => {
           const bid = getBankId(bName);
           const mid = getMethodId(mCode);
-          if (bid && mid) brm.push({ bank: bid, receiving_method: mid, is_active: true });
+          if (bid && mid) brm.push({ bank: bid, payment_method: mid });
       }
 
       // Bancos Venezolanos
@@ -96,12 +129,31 @@ module.exports = {
       addBRM('Interbank', 'TRANSFER');
       // Banco de Chile
       addBRM('Banco de Chile', 'TRANSFER');
-      // Zelle
-      addBRM('Zelle', 'ZELLE');
 
       if (brm.length > 0) {
-        await queryInterface.bulkInsert('bank_receiving_methods', brm, { transaction });
+        await queryInterface.bulkInsert('bank_payment_methods', brm, { transaction });
       }
+
+      // Seed platform_bank_accounts
+      const platformBankAccounts = [
+        {
+          id: 1,
+          payment_method: 1, // Transferencia Bancaria (local)
+          country: 2, // Chile
+          is_global: false,
+          currency: 2, // CLP
+          account_details: JSON.stringify({ bankName: 'Banco Santander', accountNumber: '123456789', owner: 'Remesas SpA', rut: '76.123.456-7' }),
+        },
+        {
+          id: 2,
+          payment_method: 4, // Zelle (global)
+          country: null,
+          is_global: true,
+          currency: 1, // USD
+          account_details: JSON.stringify({ email: 'pagos@remesas.com', owner: 'Remesas LLC' }),
+        }
+      ];
+      await queryInterface.bulkInsert('platform_bank_accounts', platformBankAccounts, { transaction });
 
       await transaction.commit();
     } catch (err) {
@@ -113,8 +165,10 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      await queryInterface.bulkDelete('bank_receiving_methods', null, { transaction });
-      await queryInterface.bulkDelete('receiving_methods', null, { transaction });
+      await queryInterface.bulkDelete('bank_payment_methods', null, { transaction });
+      await queryInterface.bulkDelete('country_payment_methods', null, { transaction });
+      await queryInterface.bulkDelete('country_banks', null, { transaction });
+      await queryInterface.bulkDelete('payment_methods', null, { transaction });
       await queryInterface.bulkDelete('banks', null, { transaction });
       await queryInterface.bulkDelete('countries', null, { transaction });
       await queryInterface.bulkDelete('currencies', null, { transaction });
@@ -127,3 +181,4 @@ module.exports = {
     }
   }
 };
+

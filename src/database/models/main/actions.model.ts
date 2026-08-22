@@ -15,6 +15,7 @@ export default class ActionsModel extends SequelizeModelBase {
             name: 'Actions',
             appRawName: 'actions',
             tableName: 'actions',
+            displayField: 'description',
             paranoid: true,
         };
     }

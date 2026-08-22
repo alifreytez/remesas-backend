@@ -8,8 +8,9 @@ module.exports = {
       await queryInterface.createTable('users', {
         id: { allowNull: false, autoIncrement: true, primaryKey: true, type: Sequelize.INTEGER },
         username: { type: Sequelize.STRING(255), allowNull: false },
-        user_type: { type: Sequelize.INTEGER, allowNull: false },
-        person: { type: Sequelize.INTEGER, allowNull: false },
+        user_type: { type: Sequelize.INTEGER, allowNull: false , references: { model: 'user_types', key: 'id' }, onDelete: 'NO ACTION', onUpdate: 'NO ACTION' },
+        person: { type: Sequelize.INTEGER, allowNull: false , references: { model: 'people', key: 'id' }, onDelete: 'NO ACTION', onUpdate: 'NO ACTION' },
+        country: { type: Sequelize.INTEGER, allowNull: false , references: { model: 'countries', key: 'id' }, onDelete: 'NO ACTION', onUpdate: 'NO ACTION' },
         email: { allowNull: false, type: Sequelize.STRING(150) },
         password_hash: { allowNull: false, type: Sequelize.STRING(255) },
         created_at: { allowNull: false, type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
@@ -28,29 +29,6 @@ module.exports = {
         name: 'unique_person_userType',
         transaction
       });
-      await queryInterface.addConstraint(
-        { tableName: 'users' },
-        {
-          fields: ['user_type'],
-          type: 'foreign key',
-          name: 'fk_users_user_type',
-          references: { table: { tableName: 'user_types' }, field: 'id' },
-          onDelete: 'NO ACTION',
-          onUpdate: 'NO ACTION',
-          transaction,
-        }
-      );      await queryInterface.addConstraint(
-        { tableName: 'users' },
-        {
-          fields: ['person'],
-          type: 'foreign key',
-          name: 'fk_users_person',
-          references: { table: { tableName: 'people' }, field: 'id' },
-          onDelete: 'NO ACTION',
-          onUpdate: 'NO ACTION',
-          transaction,
-        }
-      );
       await transaction.commit();
     } catch (err) {
       await transaction.rollback();

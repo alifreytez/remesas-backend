@@ -165,6 +165,7 @@ module.exports = {
           username: 'R28019240',
           user_type: userTypeAdminId,
           person: personAdminId,
+          country: veId,
           email: 'pastoralirio6589@gmail.com',
           password_hash: passAdmin
         },
@@ -172,6 +173,7 @@ module.exports = {
           username: '28019240',
           user_type: userTypeClientId,
           person: personAdminId,
+          country: veId,
           email: 'pastoralirio6589@gmail.com',
           password_hash: passAdmin
         },
@@ -179,6 +181,7 @@ module.exports = {
           username: 'R123456789',
           user_type: userTypeAdminId, 
           person: personOpId,
+          country: veId,
           email: 'operador@remesas.com',
           password_hash: passOp
         },
@@ -186,6 +189,7 @@ module.exports = {
           username: 'R987654321',
           user_type: userTypeAdminId, 
           person: personManId,
+          country: veId,
           email: 'gerente@remesas.com',
           password_hash: passMan
         }
@@ -196,9 +200,9 @@ module.exports = {
       const [uMan] = await queryInterface.sequelize.query(`SELECT id FROM users WHERE username = 'R987654321'`, { transaction });
 
       await queryInterface.bulkInsert('user_roles', [
-        { user_id: uAdmin[0].id, role: roleSuperAdminId },
-        { user_id: uOp[0].id, role: roleOperatorId },
-        { user_id: uMan[0].id, role: roleManagerId }
+        { user: uAdmin[0].id, role: roleSuperAdminId },
+        { user: uOp[0].id, role: roleOperatorId },
+        { user: uMan[0].id, role: roleManagerId }
       ], { transaction });
 
       await transaction.commit();

@@ -1,4 +1,4 @@
-import { DataTypes } from 'sequelize';
+﻿import { DataTypes } from 'sequelize';
 import { type RelationsReturn, SequelizeModelBase } from '@database/models/bases/sequelize.model.js';
 
 export default class CountriesModel extends SequelizeModelBase {
@@ -52,7 +52,19 @@ export default class CountriesModel extends SequelizeModelBase {
                 type: 'belongsTo',
                 target: 'Currencies',
                 options: { foreignKey: 'nationalCurrency', as: '_NationalCurrency' },
+            },
+            {
+                type: 'belongsToMany',
+                target: 'PaymentMethods',
+                options: { through: 'CountryPaymentMethods', foreignKey: 'country', as: '_PaymentMethods' },
+            },
+            {
+                type: 'belongsToMany',
+                target: 'Banks',
+                options: { through: 'CountryBanks', foreignKey: 'country', as: '_Banks' },
             }
         ];
     }
 }
+
+

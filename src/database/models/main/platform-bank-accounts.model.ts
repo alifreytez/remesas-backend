@@ -11,46 +11,56 @@ export default class PlatformBankAccountsModel extends SequelizeModelBase {
                 autoIncrement: true,
                 enhancedData: { visible: false, order: 1 },
             },
-            bank: {
+            paymentMethod: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
                 enhancedData: { 
-                    uiLabel: 'Banco', 
+                    uiLabel: 'Método de Pago', 
                     order: 2,
                     inputType: 'select' as const,
-                    relatedCatalog: 'banks'
+                    relatedCatalog: 'payment-methods'
                 },
+            },
+            country: {
+                allowNull: true,
+                type: DataTypes.INTEGER,
+                enhancedData: { 
+                    uiLabel: 'País (Nulo si es Global)', 
+                    order: 3,
+                    inputType: 'select' as const,
+                    relatedCatalog: 'countries'
+                },
+            },
+            isGlobal: {
+                allowNull: false,
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
+                enhancedData: { uiLabel: 'Es método global?', order: 4 },
             },
             accountDetails: {
                 allowNull: false,
                 type: DataTypes.JSONB,
-                enhancedData: { uiLabel: 'Detalles de la Cuenta', order: 3 },
+                enhancedData: { uiLabel: 'Detalles de la Cuenta', order: 5 },
             },
             currency: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
                 enhancedData: { 
                     uiLabel: 'Moneda', 
-                    order: 4,
+                    order: 6,
                     inputType: 'select' as const,
                     relatedCatalog: 'currencies'
                 },
-            },
-            isActive: {
-                allowNull: false,
-                type: DataTypes.BOOLEAN,
-                defaultValue: true,
-                enhancedData: { uiLabel: '¿Está Activa?', order: 4 },
             },
         };
     }
 
     static config() {
         return {
-            name: 'Cuentas Bancarias de Plataforma',
+            name: 'Cuentas Recaudadoras',
             appRawName: 'platform-bank-accounts',
             tableName: 'platform_bank_accounts',
-            displayField: 'id', // Ideally a virtual field with Bank name + Account Number, but keeping simple for now
+            displayField: 'id',
         };
     }
 
@@ -58,8 +68,13 @@ export default class PlatformBankAccountsModel extends SequelizeModelBase {
         return [
             {
                 type: 'belongsTo',
-                target: 'Banks',
-                options: { foreignKey: 'bank', as: '_Bank' },
+                target: 'PaymentMethods',
+                options: { foreignKey: 'paymentMethod', as: '_PaymentMethod' },
+            },
+            {
+                type: 'belongsTo',
+                target: 'Countries',
+                options: { foreignKey: 'country', as: '_Country' },
             },
             {
                 type: 'belongsTo',

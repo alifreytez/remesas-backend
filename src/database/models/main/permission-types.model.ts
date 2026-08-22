@@ -15,6 +15,7 @@ export default class PermissionTypesModel extends SequelizeModelBase {
             name: 'PermissionTypes',
             appRawName: 'permission-types',
             tableName: 'permission_types',
+            displayField: 'description',
             paranoid: true,
         };
     }

@@ -1,10 +1,11 @@
-import ReceivingMethodsModel from '@database/models/main/receiving-methods.model.js';
+﻿import PaymentMethodsModel from '@database/models/main/payment-methods.model.js';
 import { SequelizeRepositoryBase } from '@repositories/bases/sequelize.repository.js';
 
-class ReceivingMethodsRepository extends SequelizeRepositoryBase {
+class PaymentMethodsRepository extends SequelizeRepositoryBase {
     constructor() {
-        super(ReceivingMethodsModel);
+        super(PaymentMethodsModel);
     }
 }
 
-export default new ReceivingMethodsRepository();
+export default new PaymentMethodsRepository();
+

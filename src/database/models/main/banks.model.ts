@@ -1,4 +1,4 @@
-import { DataTypes } from 'sequelize';
+﻿import { DataTypes } from 'sequelize';
 import { type RelationsReturn, SequelizeModelBase } from '@database/models/bases/sequelize.model.js';
 
 export default class BanksModel extends SequelizeModelBase {
@@ -36,6 +36,13 @@ export default class BanksModel extends SequelizeModelBase {
     }
 
     static relations(): RelationsReturn {
-        return [];
+        return [
+            {
+                type: 'belongsToMany',
+                target: 'Countries',
+                options: { through: 'CountryBanks', foreignKey: 'bank', as: '_Countries' },
+            }
+        ];
     }
 }
+
